@@ -7,18 +7,33 @@ export default function Session() {
   const navigate = useNavigate();
   const session = program.sessions.find((s) => s.id === sessionId);
 
-  if (!session) return <div className="page">Séance introuvable</div>;
+  if (!session) {
+    return (
+      <div className="page">
+        <header className="page-header">
+          <button className="back-btn" onClick={() => navigate("/")} aria-label="Retour">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <h1 className="page-title">Séance introuvable</h1>
+        </header>
+      </div>
+    );
+  }
 
   const totalExercises = session.sections.reduce(
     (acc, s) => acc + s.exercises.length,
     0
   );
 
+  let exerciseCounter = 0;
+
   return (
     <div className="page session-page">
       <header className="page-header">
-        <button className="back-btn" onClick={() => navigate(-1)}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <button className="back-btn" onClick={() => navigate("/")} aria-label="Retour">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </button>
@@ -41,7 +56,7 @@ export default function Session() {
 
       {session.warmup && (
         <div className="tip-banner">
-          <span className="tip-icon">💡</span>
+          <span className="tip-icon" aria-hidden="true">💡</span>
           <p>{session.warmup}</p>
         </div>
       )}
@@ -56,9 +71,16 @@ export default function Session() {
       {session.sections.map((section) => (
         <div key={section.title} className="exercise-section">
           <h3 className="exercise-section-title">{section.title}</h3>
-          {section.exercises.map((exercise, i) => (
-            <ExerciseCard key={exercise.id} exercise={exercise} index={i} />
-          ))}
+          {section.exercises.map((exercise) => {
+            exerciseCounter++;
+            return (
+              <ExerciseCard
+                key={exercise.id}
+                exercise={exercise}
+                globalIndex={exerciseCounter}
+              />
+            );
+          })}
         </div>
       ))}
     </div>

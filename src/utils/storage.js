@@ -3,7 +3,9 @@ const STORAGE_KEY = "sportlab_logs";
 export function getAllLogs() {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : {};
+    if (!data) return {};
+    const parsed = JSON.parse(data);
+    return typeof parsed === "object" && parsed !== null ? parsed : {};
   } catch {
     return {};
   }
@@ -12,7 +14,12 @@ export function getAllLogs() {
 export function saveSessionLog(date, sessionId, exerciseLogs) {
   const logs = getAllLogs();
   const key = `${date}_${sessionId}`;
-  logs[key] = { date, sessionId, exercises: exerciseLogs, timestamp: Date.now() };
+  logs[key] = {
+    date,
+    sessionId,
+    exercises: exerciseLogs,
+    timestamp: Date.now(),
+  };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
 }
 
@@ -22,10 +29,9 @@ export function getLastLogForExercise(exerciseId) {
 
   for (const key of Object.keys(logs)) {
     const log = logs[key];
-    if (log.exercises && log.exercises[exerciseId]) {
-      if (!latest || log.timestamp > latest.timestamp) {
-        latest = { ...log.exercises[exerciseId], timestamp: log.timestamp };
-      }
+    if (!log?.exercises?.[exerciseId]) continue;
+    if (!latest || log.timestamp > latest.timestamp) {
+      latest = { ...log.exercises[exerciseId], timestamp: log.timestamp };
     }
   }
 
@@ -38,13 +44,19 @@ export function getExerciseHistory(exerciseId) {
 
   for (const key of Object.keys(logs)) {
     const log = logs[key];
-    if (log.exercises && log.exercises[exerciseId]) {
-      history.push({
-        date: log.date,
-        sets: log.exercises[exerciseId].sets,
-      });
-    }
+    if (!log?.exercises?.[exerciseId]?.sets) continue;
+    history.push({
+      date: log.date,
+      sets: log.exercises[exerciseId].sets,
+    });
   }
 
   return history.sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+
+export function getRecentSessions() {
+  const logs = getAllLogs();
+  return Object.values(logs)
+    .filter((log) => log?.date && log?.sessionId)
+    .sort((a, b) => b.timestamp - a.timestamp);
 }

@@ -18,7 +18,20 @@ export default function History() {
   const exercise = findExercise(exerciseId);
   const history = getExerciseHistory(exerciseId);
 
-  if (!exercise) return <div className="page">Exercice introuvable</div>;
+  if (!exercise) {
+    return (
+      <div className="page">
+        <header className="page-header">
+          <button className="back-btn" onClick={() => navigate("/")} aria-label="Retour">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <h1 className="page-title">Exercice introuvable</h1>
+        </header>
+      </div>
+    );
+  }
 
   const maxWeight = history.reduce((max, h) => {
     const w = Math.max(...h.sets.map((s) => Number(s.weight) || 0));
@@ -28,8 +41,8 @@ export default function History() {
   return (
     <div className="page history-page">
       <header className="page-header">
-        <button className="back-btn" onClick={() => navigate(-1)}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <button className="back-btn" onClick={() => navigate(-1)} aria-label="Retour">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </button>
@@ -62,7 +75,7 @@ export default function History() {
 
       {history.length === 0 ? (
         <div className="empty-state">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4" aria-hidden="true">
             <path d="M6.5 6.5h-3v11h3v-11zM17.5 6.5h3v11h-3v-11zM6.5 10.5h11v3h-11z" />
           </svg>
           <p>Aucun historique pour cet exercice.</p>
@@ -74,7 +87,7 @@ export default function History() {
           {history.slice().reverse().map((entry, i) => (
             <div key={i} className="history-entry">
               <div className="history-date">
-                {new Date(entry.date).toLocaleDateString("fr-FR", {
+                {new Date(entry.date + "T12:00:00").toLocaleDateString("fr-FR", {
                   weekday: "short",
                   day: "numeric",
                   month: "short",
