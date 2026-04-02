@@ -1330,6 +1330,85 @@ body {
   text-align: center;
 }
 
+/* ========== CANCEL SESSION MODAL ========== */
+.cancel-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.2s ease;
+}
+
+.cancel-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 360px;
+  animation: scaleIn 250ms var(--ease-spring);
+}
+
+.cancel-modal-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-1);
+  margin-bottom: 8px;
+}
+
+.cancel-modal-text {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.cancel-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cancel-modal-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.cancel-modal-btn:active {
+  transform: scale(0.97);
+}
+
+.cancel-modal-btn.save {
+  background: var(--accent);
+  color: white;
+}
+
+.cancel-modal-btn.discard {
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--red);
+}
+
+.cancel-modal-btn.continue {
+  background: var(--bg-input);
+  color: var(--text-2);
+}
+
 /* ========== WORKOUT COMPLETE ========== */
 .workout-complete {
   display: flex;

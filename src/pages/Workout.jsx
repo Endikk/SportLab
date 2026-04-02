@@ -58,6 +58,7 @@ export default function Workout() {
   const [cardKey, setCardKey] = useState(0);
   const [allDone, setAllDone] = useState(false);
   const [showImage, setShowImage] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const touchStartX = useRef(null);
   const touchStartY = useRef(null);
@@ -234,6 +235,21 @@ export default function Workout() {
     setSaved(true);
   };
 
+  // ─── Cancel session ───
+  const handleCancelRequest = () => setShowCancelModal(true);
+
+  const handleCancelSave = () => {
+    const today = new Date().toLocaleDateString("fr-CA");
+    saveSessionLog(today, sessionId, exerciseLogs);
+    clearProgress();
+    navigate("/");
+  };
+
+  const handleCancelDiscard = () => {
+    clearProgress();
+    navigate("/");
+  };
+
   // ─── Progress stats ───
   const completedSets = Object.values(exerciseLogs).reduce(
     (acc, ex) => acc + (ex.sets?.filter((s) => s.done).length ?? 0),
@@ -307,7 +323,7 @@ export default function Workout() {
     <div className="page workout-page">
       {/* Header */}
       <header className="workout-header">
-        <button className="back-btn" onClick={() => navigate("/")} aria-label="Retour">
+        <button className="back-btn" onClick={handleCancelRequest} aria-label="Quitter">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
@@ -470,6 +486,38 @@ export default function Workout() {
         <div className="image-viewer" onClick={() => setShowImage(false)}>
           <ExerciseImage name={currentExercise.image} alt={currentExercise.name} className="image-viewer-img" />
           <p className="image-viewer-name">{currentExercise.name}</p>
+        </div>
+      )}
+
+      {/* Cancel session modal */}
+      {showCancelModal && (
+        <div className="cancel-modal-overlay" onClick={() => setShowCancelModal(false)}>
+          <div className="cancel-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="cancel-modal-title">Annuler la séance ?</h3>
+            <p className="cancel-modal-text">
+              Tu as validé {completedSets} / {totalSets} séries. Veux-tu sauvegarder ta progression ?
+            </p>
+            <div className="cancel-modal-actions">
+              <button className="cancel-modal-btn save" onClick={handleCancelSave}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+                Sauvegarder et quitter
+              </button>
+              <button className="cancel-modal-btn discard" onClick={handleCancelDiscard}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                </svg>
+                Quitter sans sauvegarder
+              </button>
+              <button className="cancel-modal-btn continue" onClick={() => setShowCancelModal(false)}>
+                Continuer la séance
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
