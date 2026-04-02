@@ -15,31 +15,31 @@ export const program = {
         {
           title: "PECTORAUX",
           exercises: [
-            { id: "push-1", name: "Développé couché (barre)", sets: 4, reps: "8-10", rest: "2 min 30", notes: "Exercice de base, charges lourdes", image: "developpe-couche.jpg" },
-            { id: "push-2", name: "Développé incliné (haltères)", sets: 4, reps: "10-12", rest: "2 min", notes: "Angle 30-45°", image: "developpe-incline.jpg" },
-            { id: "push-3", name: "Écarté poulie vis-à-vis", sets: 3, reps: "12-15", rest: "1 min 30", notes: "Serrer en haut, contrôler", image: "ecarte-poulie.jpg" },
+            { id: "push-1", name: "Développé couché (barre)", sets: 4, reps: "8-10", rest: "2 min 30", notes: "Exercice de base, charges lourdes", image: "developpe-couche" },
+            { id: "push-2", name: "Développé incliné (haltères)", sets: 4, reps: "10-12", rest: "2 min", notes: "Angle 30-45°", image: "developpe-incline" },
+            { id: "push-3", name: "Écarté poulie vis-à-vis", sets: 3, reps: "12-15", rest: "1 min 30", notes: "Serrer en haut, contrôler", image: "ecarte-poulie" },
           ],
         },
         {
           title: "ÉPAULES",
           exercises: [
-            { id: "push-4", name: "Développé militaire (haltères)", sets: 4, reps: "8-10", rest: "2 min", notes: "Debout ou assis", image: "developpe-militaire.jpg" },
-            { id: "push-5", name: "Élévations latérales", sets: 4, reps: "12-15", rest: "1 min", notes: "Contrôle à la descente", image: "elevations-laterales.jpg" },
-            { id: "push-6", name: "Oiseau (écarté inversé)", sets: 3, reps: "12-15", rest: "1 min", notes: "Épaules arrière", image: "oiseau.jpg" },
+            { id: "push-4", name: "Développé militaire (haltères)", sets: 4, reps: "8-10", rest: "2 min", notes: "Debout ou assis", image: "developpe-militaire" },
+            { id: "push-5", name: "Élévations latérales", sets: 4, reps: "12-15", rest: "1 min", notes: "Contrôle à la descente", image: "elevations-laterales" },
+            { id: "push-6", name: "Oiseau (écarté inversé)", sets: 3, reps: "12-15", rest: "1 min", notes: "Épaules arrière", image: "oiseau" },
           ],
         },
         {
           title: "TRICEPS",
           exercises: [
-            { id: "push-7", name: "Dips (lestés si possible)", sets: 3, reps: "8-12", rest: "2 min", notes: "Buste droit pour cibler triceps", image: "dips.jpg" },
-            { id: "push-8", name: "Extension poulie haute (corde)", sets: 3, reps: "12-15", rest: "1 min", notes: "Écarter la corde en bas", image: "extension-poulie.jpg" },
+            { id: "push-7", name: "Dips (lestés si possible)", sets: 3, reps: "8-12", rest: "2 min", notes: "Buste droit pour cibler triceps", image: "dips" },
+            { id: "push-8", name: "Extension poulie haute (corde)", sets: 3, reps: "12-15", rest: "1 min", notes: "Écarter la corde en bas", image: "extension-poulie" },
           ],
         },
         {
           title: "ABDOMINAUX",
           exercises: [
-            { id: "push-9", name: "Crunch machine", sets: 3, reps: "12-15", rest: "1 min", notes: "Charge progressive, expirer fort", image: "crunch-machine.jpg" },
-            { id: "push-10", name: "Relevés de jambes (suspendu)", sets: 3, reps: "10-15", rest: "1 min", notes: "Bassin qui remonte", image: "releves-jambes.jpg" },
+            { id: "push-9", name: "Crunch machine", sets: 3, reps: "12-15", rest: "1 min", notes: "Charge progressive, expirer fort", image: "crunch-machine" },
+            { id: "push-10", name: "Relevés de jambes (suspendu)", sets: 3, reps: "10-15", rest: "1 min", notes: "Bassin qui remonte", image: "releves-jambes" },
           ],
         },
       ],
@@ -55,37 +55,37 @@ export const program = {
         {
           title: "DOS (ÉPAISSEUR)",
           exercises: [
-            { id: "pull-1", name: "Rowing barre (pronation)", sets: 4, reps: "8-10", rest: "2 min 30", notes: "Buste penché ~45°, tirer vers le nombril", image: "rowing-barre.jpg" },
-            { id: "pull-2", name: "Rowing haltère unilatéral", sets: 3, reps: "10-12", rest: "1 min 30", notes: "Chaque côté, serrer l'omoplate", image: "rowing-haltere.jpg" },
+            { id: "pull-1", name: "Rowing barre (pronation)", sets: 4, reps: "8-10", rest: "2 min 30", notes: "Buste penché ~45°, tirer vers le nombril", image: "rowing-barre" },
+            { id: "pull-2", name: "Rowing haltère unilatéral", sets: 3, reps: "10-12", rest: "1 min 30", notes: "Chaque côté, serrer l'omoplate", image: "rowing-haltere" },
           ],
         },
         {
           title: "DOS (LARGEUR)",
           exercises: [
-            { id: "pull-3", name: "Tractions (lestées si possible)", sets: 4, reps: "6-10", rest: "2 min", notes: "Prise large, pronation", image: "tractions.jpg" },
-            { id: "pull-4", name: "Tirage vertical poulie", sets: 3, reps: "10-12", rest: "1 min 30", notes: "Prise serrée ou neutre", image: "tirage-vertical.jpg" },
+            { id: "pull-3", name: "Tractions (lestées si possible)", sets: 4, reps: "6-10", rest: "2 min", notes: "Prise large, pronation", image: "tractions" },
+            { id: "pull-4", name: "Tirage vertical poulie", sets: 3, reps: "10-12", rest: "1 min 30", notes: "Prise serrée ou neutre", image: "tirage-vertical" },
           ],
         },
         {
           title: "TRAPÈZES / LOMBAIRES",
           exercises: [
-            { id: "pull-5", name: "Shrugs haltères", sets: 3, reps: "12-15", rest: "1 min", notes: "Monter les épaules, tenir 1s", image: "shrugs.jpg" },
-            { id: "pull-6", name: "Hyperextensions", sets: 3, reps: "12-15", rest: "1 min", notes: "Lestées si trop facile", image: "hyperextensions.jpg" },
+            { id: "pull-5", name: "Shrugs haltères", sets: 3, reps: "12-15", rest: "1 min", notes: "Monter les épaules, tenir 1s", image: "shrugs" },
+            { id: "pull-6", name: "Hyperextensions", sets: 3, reps: "12-15", rest: "1 min", notes: "Lestées si trop facile", image: "hyperextensions" },
           ],
         },
         {
           title: "BICEPS",
           exercises: [
-            { id: "pull-7", name: "Curl barre EZ", sets: 4, reps: "10-12", rest: "1 min 30", notes: "Pas de triche, contrôler", image: "curl-barre-ez.jpg" },
-            { id: "pull-8", name: "Curl incliné haltères", sets: 3, reps: "10-12", rest: "1 min", notes: "Banc à 45°, étirement max", image: "curl-incline.jpg" },
-            { id: "pull-9", name: "Curl marteau", sets: 3, reps: "10-12", rest: "1 min", notes: "Cible le brachial", image: "curl-marteau.jpg" },
+            { id: "pull-7", name: "Curl barre EZ", sets: 4, reps: "10-12", rest: "1 min 30", notes: "Pas de triche, contrôler", image: "curl-barre-ez" },
+            { id: "pull-8", name: "Curl incliné haltères", sets: 3, reps: "10-12", rest: "1 min", notes: "Banc à 45°, étirement max", image: "curl-incline" },
+            { id: "pull-9", name: "Curl marteau", sets: 3, reps: "10-12", rest: "1 min", notes: "Cible le brachial", image: "curl-marteau" },
           ],
         },
         {
           title: "ABDOMINAUX",
           exercises: [
-            { id: "pull-10", name: "Crunch machine", sets: 3, reps: "15-20", rest: "1 min", notes: "Séries longues, contraction lente", image: "crunch-machine.jpg" },
-            { id: "pull-11", name: "Gainage planche", sets: 3, reps: "45-60s", rest: "45s", notes: "Corps aligné, serrer les abdos", image: "gainage-planche.jpg" },
+            { id: "pull-10", name: "Crunch machine", sets: 3, reps: "15-20", rest: "1 min", notes: "Séries longues, contraction lente", image: "crunch-machine" },
+            { id: "pull-11", name: "Gainage planche", sets: 3, reps: "45-60s", rest: "45s", notes: "Corps aligné, serrer les abdos", image: "gainage-planche" },
           ],
         },
       ],
@@ -101,30 +101,30 @@ export const program = {
         {
           title: "QUADRICEPS",
           exercises: [
-            { id: "legs-1", name: "Squat barre (back squat)", sets: 4, reps: "6-10", rest: "3 min", notes: "Profondeur parallèle minimum", image: "squat.jpg" },
-            { id: "legs-2", name: "Presse à cuisses", sets: 4, reps: "10-12", rest: "2 min", notes: "Pieds mi-hauteur, écartés", image: "presse-cuisses.jpg" },
-            { id: "legs-3", name: "Leg extension", sets: 3, reps: "12-15", rest: "1 min", notes: "Contracter en haut 1s", image: "leg-extension.jpg" },
+            { id: "legs-1", name: "Squat barre (back squat)", sets: 4, reps: "6-10", rest: "3 min", notes: "Profondeur parallèle minimum", image: "squat" },
+            { id: "legs-2", name: "Presse à cuisses", sets: 4, reps: "10-12", rest: "2 min", notes: "Pieds mi-hauteur, écartés", image: "presse-cuisses" },
+            { id: "legs-3", name: "Leg extension", sets: 3, reps: "12-15", rest: "1 min", notes: "Contracter en haut 1s", image: "leg-extension" },
           ],
         },
         {
           title: "ISCHIO-JAMBIERS",
           exercises: [
-            { id: "legs-4", name: "Soulevé de terre roumain", sets: 4, reps: "8-10", rest: "2 min", notes: "Étirement ischios, dos neutre", image: "souleve-terre-roumain.jpg" },
-            { id: "legs-5", name: "Leg curl allongé", sets: 3, reps: "10-12", rest: "1 min 30", notes: "Contrôle excentrique", image: "leg-curl.jpg" },
+            { id: "legs-4", name: "Soulevé de terre roumain", sets: 4, reps: "8-10", rest: "2 min", notes: "Étirement ischios, dos neutre", image: "souleve-terre-roumain" },
+            { id: "legs-5", name: "Leg curl allongé", sets: 3, reps: "10-12", rest: "1 min 30", notes: "Contrôle excentrique", image: "leg-curl" },
           ],
         },
         {
           title: "MOLLETS",
           exercises: [
-            { id: "legs-6", name: "Mollets debout (machine)", sets: 4, reps: "12-15", rest: "1 min", notes: "Amplitude complète", image: "mollets-debout.jpg" },
-            { id: "legs-7", name: "Mollets assis", sets: 3, reps: "15-20", rest: "1 min", notes: "Cible le soléaire", image: "mollets-assis.jpg" },
+            { id: "legs-6", name: "Mollets debout (machine)", sets: 4, reps: "12-15", rest: "1 min", notes: "Amplitude complète", image: "mollets-debout" },
+            { id: "legs-7", name: "Mollets assis", sets: 3, reps: "15-20", rest: "1 min", notes: "Cible le soléaire", image: "mollets-assis" },
           ],
         },
         {
           title: "ABDOMINAUX",
           exercises: [
-            { id: "legs-8", name: "Crunch machine", sets: 4, reps: "12-15", rest: "1 min", notes: "Monter la charge, reps contrôlées", image: "crunch-machine.jpg" },
-            { id: "legs-9", name: "Woodchop au câble", sets: 3, reps: "12/côté", rest: "1 min", notes: "Obliques, mouvement fluide", image: "woodchop.jpg" },
+            { id: "legs-8", name: "Crunch machine", sets: 4, reps: "12-15", rest: "1 min", notes: "Monter la charge, reps contrôlées", image: "crunch-machine" },
+            { id: "legs-9", name: "Woodchop au câble", sets: 3, reps: "12/côté", rest: "1 min", notes: "Obliques, mouvement fluide", image: "woodchop" },
           ],
         },
       ],
@@ -140,24 +140,24 @@ export const program = {
         {
           title: "ÉPAULES (FOCUS)",
           exercises: [
-            { id: "bonus-1", name: "Développé Arnold", sets: 4, reps: "10-12", rest: "2 min", notes: "Rotation contrôlée", image: "developpe-arnold.jpg" },
-            { id: "bonus-2", name: "Élévations latérales (poulie)", sets: 4, reps: "12-15", rest: "1 min", notes: "Tension constante", image: "elevations-poulie.jpg" },
-            { id: "bonus-3", name: "Face pull (poulie haute)", sets: 3, reps: "15-20", rest: "1 min", notes: "Rotation externe en haut", image: "face-pull.jpg" },
+            { id: "bonus-1", name: "Développé Arnold", sets: 4, reps: "10-12", rest: "2 min", notes: "Rotation contrôlée", image: "developpe-arnold" },
+            { id: "bonus-2", name: "Élévations latérales (poulie)", sets: 4, reps: "12-15", rest: "1 min", notes: "Tension constante", image: "elevations-poulie" },
+            { id: "bonus-3", name: "Face pull (poulie haute)", sets: 3, reps: "15-20", rest: "1 min", notes: "Rotation externe en haut", image: "face-pull" },
           ],
         },
         {
           title: "BRAS (SUPERSET)",
           exercises: [
-            { id: "bonus-4", name: "Curl pupitre + Barre au front", sets: 4, reps: "10-12", rest: "1 min 30", notes: "Superset biceps/triceps", image: "curl-pupitre.jpg" },
-            { id: "bonus-5", name: "Curl concentré + Kickback", sets: 3, reps: "12-15", rest: "1 min", notes: "Superset finition", image: "curl-concentre.jpg" },
+            { id: "bonus-4", name: "Curl pupitre + Barre au front", sets: 4, reps: "10-12", rest: "1 min 30", notes: "Superset biceps/triceps", image: "curl-pupitre" },
+            { id: "bonus-5", name: "Curl concentré + Kickback", sets: 3, reps: "12-15", rest: "1 min", notes: "Superset finition", image: "curl-concentre" },
           ],
         },
         {
           title: "ABDOMINAUX",
           exercises: [
-            { id: "bonus-6", name: "Crunch machine", sets: 4, reps: "10-12", rest: "1 min", notes: "Charge lourde, tempo lent 3-1-1", image: "crunch-machine.jpg" },
-            { id: "bonus-7", name: "Relevés de jambes (suspendu)", sets: 3, reps: "10-15", rest: "1 min", notes: "Bassin qui remonte", image: "releves-jambes.jpg" },
-            { id: "bonus-8", name: "Gainage planche", sets: 3, reps: "45-60s", rest: "45s", notes: "Corps aligné, ne pas creuser", image: "gainage-planche.jpg" },
+            { id: "bonus-6", name: "Crunch machine", sets: 4, reps: "10-12", rest: "1 min", notes: "Charge lourde, tempo lent 3-1-1", image: "crunch-machine" },
+            { id: "bonus-7", name: "Relevés de jambes (suspendu)", sets: 3, reps: "10-15", rest: "1 min", notes: "Bassin qui remonte", image: "releves-jambes" },
+            { id: "bonus-8", name: "Gainage planche", sets: 3, reps: "45-60s", rest: "45s", notes: "Corps aligné, ne pas creuser", image: "gainage-planche" },
           ],
         },
       ],

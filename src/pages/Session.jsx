@@ -78,6 +78,7 @@ export default function Session() {
                 key={exercise.id}
                 exercise={exercise}
                 globalIndex={exerciseCounter}
+                sectionTitle={section.title}
               />
             );
           })}
