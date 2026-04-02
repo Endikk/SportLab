@@ -12,6 +12,72 @@ function findExercise(id) {
   return null;
 }
 
+function MiniChart({ data, color, label, unit, formatVal }) {
+  if (data.length === 0) return null;
+
+  const values = data.map((d) => d.value);
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = max - min || 1;
+
+  const W = 300;
+  const H = 100;
+  const padX = 0;
+  const padY = 8;
+  const chartW = W - padX * 2;
+  const chartH = H - padY * 2;
+
+  const points = data.map((d, i) => {
+    const x = padX + (data.length === 1 ? chartW / 2 : (i / (data.length - 1)) * chartW);
+    const y = padY + chartH - ((d.value - min) / range) * chartH;
+    return { x, y, ...d };
+  });
+
+  const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+  const areaPath = `${linePath} L${points[points.length - 1].x},${H} L${points[0].x},${H} Z`;
+
+  const last = points[points.length - 1];
+  const prev = points.length > 1 ? points[points.length - 2] : null;
+  const trend = prev ? last.value - prev.value : 0;
+
+  return (
+    <div className="chart-card">
+      <div className="chart-header">
+        <span className="chart-label">{label}</span>
+        <div className="chart-value-row">
+          <span className="chart-current" style={{ color }}>{formatVal(last.value)}{unit}</span>
+          {trend !== 0 && (
+            <span className={`chart-trend ${trend > 0 ? "up" : "down"}`}>
+              {trend > 0 ? "+" : ""}{formatVal(trend)}
+            </span>
+          )}
+        </div>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="chart-svg" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id={`grad-${label}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={areaPath} fill={`url(#grad-${label})`} />
+        <path d={linePath} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        {points.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r={i === points.length - 1 ? 4 : 2.5} fill={color} />
+        ))}
+      </svg>
+      <div className="chart-dates">
+        {data.length > 1 && (
+          <>
+            <span>{data[0].label}</span>
+            <span>{data[data.length - 1].label}</span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function History() {
   const { exerciseId } = useParams();
   const navigate = useNavigate();
@@ -38,6 +104,20 @@ export default function History() {
     return w > max ? w : max;
   }, 0);
 
+  // Chart data
+  const fmtDate = (d) =>
+    new Date(d + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+
+  const weightData = history.map((h) => ({
+    value: Math.max(...h.sets.map((s) => Number(s.weight) || 0)),
+    label: fmtDate(h.date),
+  }));
+
+  const volumeData = history.map((h) => ({
+    value: h.sets.reduce((sum, s) => sum + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0),
+    label: fmtDate(h.date),
+  }));
+
   return (
     <div className="page history-page">
       <header className="page-header">
@@ -61,10 +141,6 @@ export default function History() {
           <span>Repos</span>
           <strong>{exercise.rest}</strong>
         </div>
-        <div className="detail-row">
-          <span>Notes</span>
-          <strong>{exercise.notes}</strong>
-        </div>
         {maxWeight > 0 && (
           <div className="detail-row highlight">
             <span>Record</span>
@@ -82,26 +158,21 @@ export default function History() {
           <p className="empty-hint">Lance une séance pour commencer le suivi !</p>
         </div>
       ) : (
-        <div className="history-list">
-          <h3 className="section-title">Séances précédentes</h3>
-          {history.slice().reverse().map((entry, i) => (
-            <div key={i} className="history-entry">
-              <div className="history-date">
-                {new Date(entry.date + "T12:00:00").toLocaleDateString("fr-FR", {
-                  weekday: "short",
-                  day: "numeric",
-                  month: "short",
-                })}
-              </div>
-              <div className="history-sets">
-                {entry.sets.map((set, j) => (
-                  <span key={j} className="history-set">
-                    {set.weight || "–"}kg × {set.reps || "–"}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
+        <div className="charts-section">
+          <MiniChart
+            data={weightData}
+            color="#FF6B2C"
+            label="Poids max"
+            unit=" kg"
+            formatVal={(v) => Math.round(v * 10) / 10}
+          />
+          <MiniChart
+            data={volumeData}
+            color="#34D399"
+            label="Volume total"
+            unit=" kg"
+            formatVal={(v) => Math.round(v)}
+          />
         </div>
       )}
     </div>

@@ -2,10 +2,53 @@ import { useState, useRef } from "react";
 import { program } from "../data/program";
 import { getRecentSessions, exportData, importData } from "../utils/storage";
 import { getSessionVisual } from "../utils/exerciseVisuals";
+import BarChart from "../components/BarChart";
 
 const sessionLabels = {};
 for (const s of program.sessions) {
   sessionLabels[s.id] = s.name;
+}
+
+function buildChartData(sessions) {
+  const reversed = sessions.slice().reverse();
+
+  const fmtShort = (d) =>
+    new Date(d + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+
+  // Volume per session (last 10)
+  const volumeData = reversed.slice(-10).map((log) => {
+    let vol = 0;
+    if (log.exercises) {
+      for (const ex of Object.values(log.exercises)) {
+        for (const s of ex.sets || []) {
+          vol += (Number(s.weight) || 0) * (Number(s.reps) || 0);
+        }
+      }
+    }
+    return {
+      value: vol,
+      label: fmtShort(log.date),
+      short: fmtShort(log.date).split(" ")[0],
+    };
+  });
+
+  // Sessions per week (last 8 weeks)
+  const weekMap = {};
+  for (const log of sessions) {
+    const d = new Date(log.date + "T12:00:00");
+    const jan1 = new Date(d.getFullYear(), 0, 1);
+    const weekNum = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+    const key = `${d.getFullYear()}-${weekNum}`;
+    if (!weekMap[key]) weekMap[key] = { count: 0, label: `Sem. ${weekNum}`, short: `S${weekNum}` };
+    weekMap[key].count++;
+  }
+  const weekData = Object.values(weekMap).slice(-8).map((w) => ({
+    value: w.count,
+    label: w.label,
+    short: w.short,
+  }));
+
+  return { volumeData, weekData };
 }
 
 export default function Logs() {
@@ -17,8 +60,8 @@ export default function Logs() {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const count = await importData(file);
-      setImportMsg(`${count} séance(s) importée(s)`);
+      const msg = await importData(file);
+      setImportMsg(msg);
       setTimeout(() => setImportMsg(null), 3000);
     } catch (err) {
       setImportMsg(err.message);
@@ -27,6 +70,8 @@ export default function Logs() {
     e.target.value = "";
   };
 
+  const { volumeData, weekData } = buildChartData(sessions);
+
   return (
     <div className="page logs-page">
       <header className="home-header">
@@ -34,32 +79,7 @@ export default function Logs() {
           <span className="logo-sport">SPORT</span>
           <span className="logo-lab">LAB.</span>
         </div>
-        <p className="home-subtitle">Historique des séances</p>
       </header>
-
-      {/* Backup buttons */}
-      <div className="backup-section">
-        <button className="backup-btn" onClick={exportData}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
-          </svg>
-          Sauvegarder
-        </button>
-        <button className="backup-btn" onClick={() => fileRef.current?.click()}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-          </svg>
-          Restaurer
-        </button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".json"
-          style={{ display: "none" }}
-          onChange={handleImport}
-        />
-      </div>
-      {importMsg && <p className="import-msg">{importMsg}</p>}
 
       {sessions.length === 0 ? (
         <div className="empty-state">
@@ -71,57 +91,79 @@ export default function Logs() {
           <p className="empty-hint">Démarre ton premier workout !</p>
         </div>
       ) : (
-        <div className="logs-list">
-          {sessions.map((log, i) => {
-            const exerciseCount = log.exercises
-              ? Object.keys(log.exercises).length
-              : 0;
-            const completedSets = log.exercises
-              ? Object.values(log.exercises).reduce(
-                  (acc, ex) => acc + (ex.sets?.filter((s) => s.done).length ?? 0),
-                  0
-                )
-              : 0;
-            const totalSets = log.exercises
-              ? Object.values(log.exercises).reduce(
-                  (acc, ex) => acc + (ex.sets?.length ?? 0),
-                  0
-                )
-              : 0;
-            const vis = getSessionVisual(log.sessionId);
+        <>
+          {/* Charts */}
+          <div className="charts-section">
+            <BarChart
+              data={volumeData}
+              color="#FF6B2C"
+              label="Volume par séance"
+              unit=" kg"
+              formatVal={(v) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : Math.round(v)}
+            />
+            <BarChart
+              data={weekData}
+              color="#34D399"
+              label="Séances / semaine"
+              unit=""
+              formatVal={(v) => Math.round(v)}
+            />
+          </div>
 
-            return (
-              <div key={i} className="log-card">
-                <div
-                  className="log-card-stripe"
-                  style={{ background: `linear-gradient(180deg, ${vis.gradient[0]}, ${vis.gradient[1]})` }}
-                />
-                <div className="log-card-content">
-                  <div className="log-card-header">
-                    <div className="log-date">
-                      {new Date(log.date + "T12:00:00").toLocaleDateString("fr-FR", {
-                        weekday: "long",
-                        day: "numeric",
-                        month: "long",
-                      })}
+          {/* Session list */}
+          <h3 className="logs-section-title">Historique</h3>
+          <div className="logs-list">
+            {sessions.map((log, i) => {
+              const exerciseCount = log.exercises
+                ? Object.keys(log.exercises).length
+                : 0;
+              const completedSets = log.exercises
+                ? Object.values(log.exercises).reduce(
+                    (acc, ex) => acc + (ex.sets?.filter((s) => s.done).length ?? 0),
+                    0
+                  )
+                : 0;
+              const totalSets = log.exercises
+                ? Object.values(log.exercises).reduce(
+                    (acc, ex) => acc + (ex.sets?.length ?? 0),
+                    0
+                  )
+                : 0;
+              const vis = getSessionVisual(log.sessionId);
+
+              return (
+                <div key={i} className="log-card">
+                  <div
+                    className="log-card-stripe"
+                    style={{ background: `linear-gradient(180deg, ${vis.gradient[0]}, ${vis.gradient[1]})` }}
+                  />
+                  <div className="log-card-content">
+                    <div className="log-card-header">
+                      <div className="log-date">
+                        {new Date(log.date + "T12:00:00").toLocaleDateString("fr-FR", {
+                          weekday: "long",
+                          day: "numeric",
+                          month: "long",
+                        })}
+                      </div>
+                      <div className="log-badge">
+                        {completedSets}/{totalSets}
+                      </div>
                     </div>
-                    <div className="log-badge">
-                      {completedSets}/{totalSets}
+                    <div className="log-session-name">
+                      {sessionLabels[log.sessionId] || log.sessionId}
                     </div>
-                  </div>
-                  <div className="log-session-name">
-                    {sessionLabels[log.sessionId] || log.sessionId}
-                  </div>
-                  <div className="log-meta">
-                    <span>{exerciseCount} exercices</span>
-                    <span>·</span>
-                    <span>{completedSets} séries validées</span>
+                    <div className="log-meta">
+                      <span>{exerciseCount} exercices</span>
+                      <span>·</span>
+                      <span>{completedSets} séries validées</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );

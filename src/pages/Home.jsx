@@ -34,8 +34,8 @@ export default function Home() {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const count = await importData(file);
-      setMsg(`${count} séance(s) restaurée(s)`);
+      const msg = await importData(file);
+      setMsg(msg);
       setTimeout(() => setMsg(null), 3000);
     } catch (err) {
       setMsg(err.message);

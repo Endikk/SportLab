@@ -97,42 +97,103 @@ export function getWorkoutInProgress() {
 
 // ─── Export / Import ───
 
+const EXPORT_VERSION = 2;
+const APP_ID = "sportlab";
+
+function validateLog(key, log) {
+  if (!log || typeof log !== "object") return false;
+  if (typeof log.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(log.date)) return false;
+  if (typeof log.sessionId !== "string" || !log.sessionId) return false;
+  if (typeof log.timestamp !== "number") return false;
+  if (!log.exercises || typeof log.exercises !== "object") return false;
+  for (const ex of Object.values(log.exercises)) {
+    if (!Array.isArray(ex.sets)) return false;
+    for (const s of ex.sets) {
+      if (typeof s !== "object" || s === null) return false;
+      if (!("weight" in s) || !("reps" in s) || !("done" in s)) return false;
+    }
+  }
+  return true;
+}
+
 export function exportData() {
+  const logs = getAllLogs();
   const data = {
-    version: 1,
+    app: APP_ID,
+    version: EXPORT_VERSION,
     exportedAt: new Date().toISOString(),
-    logs: getAllLogs(),
+    sessionCount: Object.keys(logs).length,
+    logs,
   };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = `sportlab-backup-${new Date().toLocaleDateString("fr-CA")}.json`;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  return Object.keys(logs).length;
 }
 
 export function importData(file) {
   return new Promise((resolve, reject) => {
+    if (!file) return reject(new Error("Aucun fichier"));
+    if (!file.name.endsWith(".json")) return reject(new Error("Le fichier doit être un .json"));
+    if (file.size > 10 * 1024 * 1024) return reject(new Error("Fichier trop volumineux (max 10 Mo)"));
+
     const reader = new FileReader();
     reader.onload = (e) => {
+      let parsed;
       try {
-        const data = JSON.parse(e.target.result);
-        const logs = data.logs ?? data;
-        if (typeof logs !== "object" || logs === null) {
-          reject(new Error("Format invalide"));
-          return;
-        }
-        // Merge with existing logs (imported data wins on conflicts)
-        const existing = getAllLogs();
-        const merged = { ...existing, ...logs };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-        resolve(Object.keys(logs).length);
+        parsed = JSON.parse(e.target.result);
       } catch {
-        reject(new Error("Fichier invalide"));
+        return reject(new Error("JSON invalide — fichier corrompu"));
       }
+
+      // Accept both formats: { app, version, logs: {...} } and raw logs {...}
+      let logs;
+      if (parsed.app === APP_ID && parsed.logs && typeof parsed.logs === "object") {
+        logs = parsed.logs;
+      } else if (parsed.logs && typeof parsed.logs === "object") {
+        logs = parsed.logs;
+      } else if (typeof parsed === "object" && !Array.isArray(parsed) && !parsed.app) {
+        // Raw logs format (v1 export or manual)
+        logs = parsed;
+      } else {
+        return reject(new Error("Format non reconnu — ce n'est pas un backup SportLab"));
+      }
+
+      // Validate each log entry
+      const validLogs = {};
+      let skipped = 0;
+      for (const [key, log] of Object.entries(logs)) {
+        if (validateLog(key, log)) {
+          validLogs[key] = log;
+        } else {
+          skipped++;
+        }
+      }
+
+      const validCount = Object.keys(validLogs).length;
+      if (validCount === 0) {
+        return reject(new Error("Aucune séance valide trouvée dans le fichier"));
+      }
+
+      // Merge with existing (imported wins on same key)
+      const existing = getAllLogs();
+      const merged = { ...existing, ...validLogs };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+
+      const newCount = Object.keys(merged).length - Object.keys(existing).length;
+      const msg = newCount > 0
+        ? `${validCount} séance(s) importée(s), ${newCount} nouvelle(s)`
+        : `${validCount} séance(s) importée(s)`;
+      resolve(skipped > 0 ? `${msg} (${skipped} ignorée(s))` : msg);
     };
-    reader.onerror = () => reject(new Error("Erreur de lecture"));
+    reader.onerror = () => reject(new Error("Erreur de lecture du fichier"));
     reader.readAsText(file);
   });
 }
