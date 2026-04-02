@@ -90,6 +90,7 @@ export default function Workout() {
       initial[ex.id] = { sets };
     }
     setExerciseLogs(initial);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
   // ─── Autosave ───
@@ -99,28 +100,7 @@ export default function Workout() {
     }
   }, [exerciseLogs, sessionId, saved, exerciseIdx]);
 
-  // ─── Not found ───
-  if (!session) {
-    return (
-      <div className="page">
-        <header className="page-header">
-          <button className="back-btn" onClick={() => navigate("/")} aria-label="Retour">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <h1 className="page-title">Séance introuvable</h1>
-        </header>
-      </div>
-    );
-  }
-
-  const currentExercise = allExercises[exerciseIdx];
-  const currentSection = findSection(session, currentExercise?.id);
-  const currentSets = exerciseLogs[currentExercise?.id]?.sets;
-  const isLast = exerciseIdx === allExercises.length - 1;
-
-  // ─── Set updaters ───
+  // ─── Set updaters (hooks must be before any early return) ───
   const updateField = useCallback((exerciseId, si, field, value) => {
     setExerciseLogs((prev) => {
       const updated = { ...prev };
@@ -152,7 +132,8 @@ export default function Workout() {
     });
   }, []);
 
-  // ─── Navigate exercises ───
+  const isLast = exerciseIdx === allExercises.length - 1;
+
   const goNext = useCallback(() => {
     if (isAnimating.current) return;
     isAnimating.current = true;
@@ -182,6 +163,26 @@ export default function Workout() {
       setCardKey((k) => k + 1);
     }, 280);
   }, [exerciseIdx]);
+
+  // ─── Not found ───
+  if (!session) {
+    return (
+      <div className="page">
+        <header className="page-header">
+          <button className="back-btn" onClick={() => navigate("/")} aria-label="Retour">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <h1 className="page-title">Séance introuvable</h1>
+        </header>
+      </div>
+    );
+  }
+
+  const currentExercise = allExercises[exerciseIdx];
+  const currentSection = findSection(session, currentExercise?.id);
+  const currentSets = exerciseLogs[currentExercise?.id]?.sets;
 
   // ─── Touch handlers ───
   const handleTouchStart = (e) => {

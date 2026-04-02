@@ -1,6 +1,5 @@
-import { useState, useRef } from "react";
 import { program } from "../data/program";
-import { getRecentSessions, exportData, importData } from "../utils/storage";
+import { getRecentSessions } from "../utils/storage";
 import { getSessionVisual } from "../utils/exerciseVisuals";
 import BarChart from "../components/BarChart";
 
@@ -53,23 +52,6 @@ function buildChartData(sessions) {
 
 export default function Logs() {
   const sessions = getRecentSessions();
-  const fileRef = useRef(null);
-  const [importMsg, setImportMsg] = useState(null);
-
-  const handleImport = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const msg = await importData(file);
-      setImportMsg(msg);
-      setTimeout(() => setImportMsg(null), 3000);
-    } catch (err) {
-      setImportMsg(err.message);
-      setTimeout(() => setImportMsg(null), 3000);
-    }
-    e.target.value = "";
-  };
-
   const { volumeData, weekData } = buildChartData(sessions);
 
   return (

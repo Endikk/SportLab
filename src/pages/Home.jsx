@@ -14,8 +14,9 @@ export default function Home() {
   const recentSessions = getRecentSessions();
   const lastSession = recentSessions[0];
 
+  const [now] = useState(() => Date.now());
   const daysSince = lastSession
-    ? Math.floor((Date.now() - lastSession.timestamp) / 86400000)
+    ? Math.floor((now - lastSession.timestamp) / 86400000)
     : null;
 
   const todaySession = todaySchedule?.session
