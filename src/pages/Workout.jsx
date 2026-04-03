@@ -23,10 +23,10 @@ function loadProgress(sessionId) {
   }
 }
 
-function saveProgressData(sessionId, exerciseLogs, exerciseIdx) {
+function saveProgressData(sessionId, exerciseLogs, exerciseIdx, exerciseOrder) {
   localStorage.setItem(
     AUTOSAVE_KEY,
-    JSON.stringify({ sessionId, exerciseLogs, exerciseIdx })
+    JSON.stringify({ sessionId, exerciseLogs, exerciseIdx, exerciseOrder })
   );
 }
 
@@ -52,6 +52,7 @@ export default function Workout() {
 
   const [exerciseLogs, setExerciseLogs] = useState({});
   const [exerciseIdx, setExerciseIdx] = useState(0);
+  const [exerciseOrder, setExerciseOrder] = useState(() => allExercises.map((_, i) => i));
   const [saved, setSaved] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [exitDir, setExitDir] = useState(null);
@@ -59,6 +60,7 @@ export default function Workout() {
   const [allDone, setAllDone] = useState(false);
   const [showImage, setShowImage] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [skipToast, setSkipToast] = useState(null);
 
   const touchStartX = useRef(null);
   const touchStartY = useRef(null);
@@ -73,6 +75,7 @@ export default function Workout() {
     if (restored?.exerciseLogs) {
       setExerciseLogs(restored.exerciseLogs);
       setExerciseIdx(restored.exerciseIdx ?? 0);
+      if (restored.exerciseOrder) setExerciseOrder(restored.exerciseOrder);
       return;
     }
 
@@ -94,12 +97,15 @@ export default function Workout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
+  // ─── Ordered exercises ───
+  const orderedExercises = exerciseOrder.map((i) => allExercises[i]);
+
   // ─── Autosave ───
   useEffect(() => {
     if (Object.keys(exerciseLogs).length > 0 && !saved) {
-      saveProgressData(sessionId, exerciseLogs, exerciseIdx);
+      saveProgressData(sessionId, exerciseLogs, exerciseIdx, exerciseOrder);
     }
-  }, [exerciseLogs, sessionId, saved, exerciseIdx]);
+  }, [exerciseLogs, sessionId, saved, exerciseIdx, exerciseOrder]);
 
   // ─── Set updaters (hooks must be before any early return) ───
   const updateField = useCallback((exerciseId, si, field, value) => {
@@ -133,7 +139,7 @@ export default function Workout() {
     });
   }, []);
 
-  const isLast = exerciseIdx === allExercises.length - 1;
+  const isLast = exerciseIdx === orderedExercises.length - 1;
 
   const goNext = useCallback(() => {
     if (isAnimating.current) return;
@@ -181,7 +187,7 @@ export default function Workout() {
     );
   }
 
-  const currentExercise = allExercises[exerciseIdx];
+  const currentExercise = orderedExercises[exerciseIdx];
   const currentSection = findSection(session, currentExercise?.id);
   const currentSets = exerciseLogs[currentExercise?.id]?.sets;
 
@@ -246,6 +252,29 @@ export default function Workout() {
   const handleCancelDiscard = () => {
     clearProgress();
     navigate("/");
+  };
+
+  // ─── Skip / defer exercise ───
+  const handleSkip = () => {
+    if (isAnimating.current || isLast) return;
+    const skippedName = orderedExercises[exerciseIdx]?.name;
+    isAnimating.current = true;
+    setExitDir("right");
+    setTimeout(() => {
+      setExerciseOrder((prev) => {
+        const updated = [...prev];
+        const temp = updated[exerciseIdx];
+        updated[exerciseIdx] = updated[exerciseIdx + 1];
+        updated[exerciseIdx + 1] = temp;
+        return updated;
+      });
+      setExitDir(null);
+      setSwipeOffset(0);
+      isAnimating.current = false;
+      setCardKey((k) => k + 1);
+      setSkipToast(skippedName);
+      setTimeout(() => setSkipToast(null), 2000);
+    }, 280);
   };
 
   // ─── Progress stats ───
@@ -338,11 +367,11 @@ export default function Workout() {
 
       {/* Exercise dots */}
       <div className="exercise-dots">
-        {allExercises.map((ex, i) => {
+        {orderedExercises.map((ex, i) => {
           const done = exerciseLogs[ex.id]?.sets?.every((s) => s.done);
           return (
             <button
-              key={i}
+              key={ex.id}
               className={`exercise-dot ${i === exerciseIdx ? "active" : ""} ${done ? "done" : ""}`}
               onClick={() => {
                 if (!isAnimating.current) {
@@ -392,7 +421,7 @@ export default function Workout() {
             </svg>
             <div className="card-visual-overlay">
               <span className="card-visual-section">{currentSection?.title}</span>
-              <span className="card-visual-set">{exerciseIdx + 1}/{allExercises.length}</span>
+              <span className="card-visual-set">{exerciseIdx + 1}/{orderedExercises.length}</span>
             </div>
             {currentExercise.image && (
               <div className="card-visual-zoom">
@@ -467,7 +496,13 @@ export default function Workout() {
         <button className="nav-btn-prev" onClick={goPrev} disabled={exerciseIdx === 0}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" /></svg>
         </button>
-        <span className="nav-position">{exerciseIdx + 1} / {allExercises.length}</span>
+        {!isLast && (
+          <button className="nav-btn-skip" onClick={handleSkip} title="Reporter après le suivant">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
+            <span>Reporter</span>
+          </button>
+        )}
+        <span className="nav-position">{exerciseIdx + 1} / {orderedExercises.length}</span>
         {isLast ? (
           <button className="nav-btn-finish" onClick={() => { setAllDone(true); setCardKey((k) => k + 1); }}>
             Terminer
@@ -478,6 +513,14 @@ export default function Workout() {
           </button>
         )}
       </div>
+
+      {/* Skip toast */}
+      {skipToast && (
+        <div className="skip-toast">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
+          {skipToast} reporté
+        </div>
+      )}
 
       {/* Fullscreen image viewer */}
       {showImage && currentExercise.image && (
