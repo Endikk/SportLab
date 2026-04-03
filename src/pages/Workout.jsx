@@ -112,7 +112,19 @@ export default function Workout() {
     setExerciseLogs((prev) => {
       const updated = { ...prev };
       const sets = [...updated[exerciseId].sets];
+      const oldValue = sets[si][field];
       sets[si] = { ...sets[si], [field]: value };
+
+      // If changing weight on set 1, propagate to sets below
+      // that still have the old value (not manually edited)
+      if (field === "weight" && si === 0) {
+        for (let j = 1; j < sets.length; j++) {
+          if (sets[j].weight === oldValue) {
+            sets[j] = { ...sets[j], weight: value };
+          }
+        }
+      }
+
       updated[exerciseId] = { ...updated[exerciseId], sets };
       return updated;
     });
