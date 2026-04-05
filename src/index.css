@@ -1094,7 +1094,7 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-xs);
   color: var(--text-1);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   text-align: center;
   outline: none;
@@ -1145,7 +1145,7 @@ body {
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
   color: var(--text-1);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   text-align: center;
   outline: none;
@@ -1328,6 +1328,137 @@ body {
   font-weight: 700;
   margin-top: 16px;
   text-align: center;
+}
+
+/* ========== SKIP / DEFER BUTTON ========== */
+.nav-btn-skip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xs);
+  background: var(--bg-input);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nav-btn-skip:active {
+  transform: scale(0.95);
+  background: var(--bg-card-hover);
+}
+
+/* ========== SKIP TOAST ========== */
+.skip-toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  z-index: 200;
+  animation: toastIn 0.25s var(--ease-spring), toastOut 0.3s ease 1.7s forwards;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ========== CANCEL SESSION MODAL ========== */
+.cancel-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.2s ease;
+}
+
+.cancel-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 360px;
+  animation: scaleIn 250ms var(--ease-spring);
+}
+
+.cancel-modal-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-1);
+  margin-bottom: 8px;
+}
+
+.cancel-modal-text {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.cancel-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cancel-modal-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.cancel-modal-btn:active {
+  transform: scale(0.97);
+}
+
+.cancel-modal-btn.save {
+  background: var(--accent);
+  color: white;
+}
+
+.cancel-modal-btn.discard {
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--red);
+}
+
+.cancel-modal-btn.continue {
+  background: var(--bg-input);
+  color: var(--text-2);
 }
 
 /* ========== WORKOUT COMPLETE ========== */
