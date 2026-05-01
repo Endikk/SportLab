@@ -1,11 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { program } from "../data/program";
+import { findSessionById } from "../utils/storage";
 import ExerciseCard from "../components/ExerciseCard";
 
 export default function Session() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
-  const session = program.sessions.find((s) => s.id === sessionId);
+  const session = findSessionById(sessionId);
 
   if (!session) {
     return (

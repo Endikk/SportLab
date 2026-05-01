@@ -1,16 +1,18 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { program } from "../data/program";
-import { getExerciseHistory } from "../utils/storage";
+import {
+  getExerciseHistory,
+  findExerciseById,
+  getEstimated1RMHistory,
+  getPRForExercise,
+  getExerciseTrend,
+} from "../utils/storage";
 
-function findExercise(id) {
-  for (const session of program.sessions) {
-    for (const section of session.sections) {
-      const ex = section.exercises.find((e) => e.id === id);
-      if (ex) return ex;
-    }
-  }
-  return null;
-}
+const TREND_LABEL = {
+  up: "Tu progresses",
+  down: "En baisse",
+  stable: "Plateau",
+  neutral: "Pas assez de données",
+};
 
 function MiniChart({ data, color, label, unit, formatVal }) {
   if (data.length === 0) return null;
@@ -81,7 +83,8 @@ function MiniChart({ data, color, label, unit, formatVal }) {
 export default function History() {
   const { exerciseId } = useParams();
   const navigate = useNavigate();
-  const exercise = findExercise(exerciseId);
+  const found = findExerciseById(exerciseId);
+  const exercise = found?.exercise || null;
   const history = getExerciseHistory(exerciseId);
 
   if (!exercise) {
@@ -99,10 +102,9 @@ export default function History() {
     );
   }
 
-  const maxWeight = history.reduce((max, h) => {
-    const w = Math.max(...h.sets.map((s) => Number(s.weight) || 0));
-    return w > max ? w : max;
-  }, 0);
+  const pr = getPRForExercise(exerciseId);
+  const trend = getExerciseTrend(exerciseId);
+  const oneRMSeries = getEstimated1RMHistory(exerciseId);
 
   // Chart data
   const fmtDate = (d) =>
@@ -116,6 +118,11 @@ export default function History() {
   const volumeData = history.map((h) => ({
     value: h.sets.reduce((sum, s) => sum + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0),
     label: fmtDate(h.date),
+  }));
+
+  const oneRMData = oneRMSeries.map((p) => ({
+    value: p.value,
+    label: fmtDate(p.date),
   }));
 
   return (
@@ -132,6 +139,39 @@ export default function History() {
         </div>
       </header>
 
+      {/* Trend banner */}
+      {history.length >= 2 && (
+        <div className={`trend-banner trend-${trend.direction}`}>
+          <div className="trend-icon" aria-hidden="true">
+            {trend.direction === "up" && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M3 17l6-6 4 4 8-8" />
+                <path d="M14 7h7v7" />
+              </svg>
+            )}
+            {trend.direction === "down" && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M3 7l6 6 4-4 8 8" />
+                <path d="M14 17h7v-7" />
+              </svg>
+            )}
+            {(trend.direction === "stable" || trend.direction === "neutral") && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M5 12h14" />
+              </svg>
+            )}
+          </div>
+          <div className="trend-text">
+            <span className="trend-title">{TREND_LABEL[trend.direction]}</span>
+            {trend.direction !== "neutral" && (
+              <span className="trend-detail">
+                {trend.direction === "stable" ? "Tendance stable sur 6 séances" : `${trend.label} de 1RM estimé`}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="exercise-detail-card">
         <div className="detail-row">
           <span>Séries × Reps</span>
@@ -141,10 +181,16 @@ export default function History() {
           <span>Repos</span>
           <strong>{exercise.rest}</strong>
         </div>
-        {maxWeight > 0 && (
+        {pr.maxWeight > 0 && (
           <div className="detail-row highlight">
-            <span>Record</span>
-            <strong>{maxWeight} kg</strong>
+            <span>Record absolu</span>
+            <strong>🏆 {pr.maxWeight} kg</strong>
+          </div>
+        )}
+        {pr.max1RM > 0 && pr.max1RM !== pr.maxWeight && (
+          <div className="detail-row">
+            <span>1RM estimé</span>
+            <strong>{pr.max1RM} kg</strong>
           </div>
         )}
       </div>
@@ -166,6 +212,15 @@ export default function History() {
             unit=" kg"
             formatVal={(v) => Math.round(v * 10) / 10}
           />
+          {oneRMData.length >= 2 && (
+            <MiniChart
+              data={oneRMData}
+              color="#FBBF24"
+              label="1RM estimé"
+              unit=" kg"
+              formatVal={(v) => Math.round(v * 10) / 10}
+            />
+          )}
           <MiniChart
             data={volumeData}
             color="#34D399"

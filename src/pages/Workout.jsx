@@ -1,13 +1,29 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { program } from "../data/program";
 import {
   getLastLogForExercise,
   saveSessionLog,
   parseMaxReps,
+  parseRestSeconds,
+  findSessionById,
+  saveBodyweight,
+  getLatestBodyweight,
+  suggestNextWeight,
+  compareWithPreviousSession,
+  getExerciseNote,
+  saveExerciseNote,
 } from "../utils/storage";
 import { getGradient, getIconPath } from "../utils/exerciseVisuals";
 import ExerciseImage from "../components/ExerciseImage";
+import RestTimer from "../components/RestTimer";
+
+const RPE_VALUES = [6, 7, 8, 9, 10];
+
+function isBodyweightStale(latest) {
+  if (!latest) return true;
+  const last = new Date(latest.date + "T12:00:00").getTime();
+  return Date.now() - last > 7 * 86400000;
+}
 
 const AUTOSAVE_KEY = "sportlab_workout_progress";
 
@@ -23,11 +39,20 @@ function loadProgress(sessionId) {
   }
 }
 
-function saveProgressData(sessionId, exerciseLogs, exerciseIdx, exerciseOrder) {
+function saveProgressData(sessionId, exerciseLogs, exerciseIdx, exerciseOrder, startedAt) {
   localStorage.setItem(
     AUTOSAVE_KEY,
-    JSON.stringify({ sessionId, exerciseLogs, exerciseIdx, exerciseOrder })
+    JSON.stringify({ sessionId, exerciseLogs, exerciseIdx, exerciseOrder, startedAt })
   );
+}
+
+function fmtDuration(ms) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  if (h > 0) return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
 function clearProgress() {
@@ -44,7 +69,7 @@ function findSection(session, exerciseId) {
 export default function Workout() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
-  const session = program.sessions.find((s) => s.id === sessionId);
+  const session = findSessionById(sessionId);
 
   const allExercises = session
     ? session.sections.flatMap((s) => s.exercises)
@@ -62,6 +87,34 @@ export default function Workout() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [skipToast, setSkipToast] = useState(null);
 
+  // P4 — qualité de vie
+  const [restTimerKey, setRestTimerKey] = useState(0); // change pour redémarrer le timer
+  const [restTimerSec, setRestTimerSec] = useState(0); // 0 = inactif
+  const [openRpeFor, setOpenRpeFor] = useState(null); // "exId-i" si popup ouvert
+  const [mood, setMood] = useState(null);
+  const [note, setNote] = useState("");
+  const [bwInput, setBwInput] = useState("");
+  const [askBw] = useState(() => isBodyweightStale(getLatestBodyweight()));
+
+  // Phase B — chrono + suggestions
+  const [startedAt, setStartedAt] = useState(() => {
+    const restored = loadProgress(sessionId);
+    return restored?.startedAt || Date.now();
+  });
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  const [suggestions, setSuggestions] = useState({}); // exId → suggestion
+  const [comparison, setComparison] = useState(null);
+
+  // Phase C — note par exercice
+  const [editingNote, setEditingNote] = useState(false);
+  const [noteDraft, setNoteDraft] = useState("");
+  const [notesVersion, setNotesVersion] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
   const touchStartX = useRef(null);
   const touchStartY = useRef(null);
   const isSwiping = useRef(false);
@@ -76,17 +129,27 @@ export default function Workout() {
       setExerciseLogs(restored.exerciseLogs);
       setExerciseIdx(restored.exerciseIdx ?? 0);
       if (restored.exerciseOrder) setExerciseOrder(restored.exerciseOrder);
+      if (restored.startedAt) setStartedAt(restored.startedAt);
       return;
     }
 
     const initial = {};
+    const sugg = {};
     for (const ex of allExercises) {
       const last = getLastLogForExercise(ex.id);
       const maxReps = parseMaxReps(ex.reps);
+      const suggestion = suggestNextWeight(ex.id, maxReps);
+      if (suggestion) sugg[ex.id] = suggestion;
+
+      const initialWeight =
+        suggestion?.suggestedWeight != null
+          ? String(suggestion.suggestedWeight)
+          : (last?.sets?.[0]?.weight ?? "");
+
       const sets = [];
       for (let i = 0; i < ex.sets; i++) {
         sets.push({
-          weight: last?.sets?.[i]?.weight ?? "",
+          weight: i === 0 ? initialWeight : (last?.sets?.[i]?.weight ?? initialWeight),
           reps: maxReps !== null ? String(maxReps) : ex.reps || "",
           done: false,
         });
@@ -94,6 +157,7 @@ export default function Workout() {
       initial[ex.id] = { sets };
     }
     setExerciseLogs(initial);
+    setSuggestions(sugg);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
@@ -103,9 +167,9 @@ export default function Workout() {
   // ─── Autosave ───
   useEffect(() => {
     if (Object.keys(exerciseLogs).length > 0 && !saved) {
-      saveProgressData(sessionId, exerciseLogs, exerciseIdx, exerciseOrder);
+      saveProgressData(sessionId, exerciseLogs, exerciseIdx, exerciseOrder, startedAt);
     }
-  }, [exerciseLogs, sessionId, saved, exerciseIdx, exerciseOrder]);
+  }, [exerciseLogs, sessionId, saved, exerciseIdx, exerciseOrder, startedAt]);
 
   // ─── Set updaters (hooks must be before any early return) ───
   const updateField = useCallback((exerciseId, si, field, value) => {
@@ -141,14 +205,33 @@ export default function Workout() {
     });
   }, []);
 
-  const toggleDone = useCallback((exerciseId, si) => {
+  const toggleDone = useCallback((exerciseId, si, restStr) => {
+    let nowDone = false;
     setExerciseLogs((prev) => {
       const updated = { ...prev };
       const sets = [...updated[exerciseId].sets];
-      sets[si] = { ...sets[si], done: !sets[si].done };
+      const next = !sets[si].done;
+      nowDone = next;
+      sets[si] = { ...sets[si], done: next };
       updated[exerciseId] = { ...updated[exerciseId], sets };
       return updated;
     });
+    // Lancer le timer de repos quand un set vient d'être validé
+    if (nowDone) {
+      setRestTimerSec(parseRestSeconds(restStr));
+      setRestTimerKey((k) => k + 1);
+    }
+  }, []);
+
+  const setRpe = useCallback((exerciseId, si, value) => {
+    setExerciseLogs((prev) => {
+      const updated = { ...prev };
+      const sets = [...updated[exerciseId].sets];
+      sets[si] = { ...sets[si], rpe: value };
+      updated[exerciseId] = { ...updated[exerciseId], sets };
+      return updated;
+    });
+    setOpenRpeFor(null);
   }, []);
 
   const isLast = exerciseIdx === orderedExercises.length - 1;
@@ -182,6 +265,14 @@ export default function Workout() {
       setCardKey((k) => k + 1);
     }, 280);
   }, [exerciseIdx]);
+
+  // ─── Calcul du comparateur quand on arrive sur l'écran allDone ───
+  useEffect(() => {
+    if (allDone && !comparison) {
+      setComparison(compareWithPreviousSession(sessionId, exerciseLogs));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allDone]);
 
   // ─── Not found ───
   if (!session) {
@@ -248,7 +339,17 @@ export default function Workout() {
   // ─── Save ───
   const handleSave = () => {
     const today = new Date().toLocaleDateString("fr-CA");
-    saveSessionLog(today, sessionId, exerciseLogs);
+    const meta = {};
+    if (mood) meta.mood = mood;
+    if (note.trim()) meta.note = note.trim();
+    const bw = parseFloat(bwInput.replace(",", "."));
+    if (isFinite(bw) && bw > 0 && bw < 400) {
+      meta.bodyweight = bw;
+      saveBodyweight(today, bw);
+    }
+    const durationMin = Math.max(1, Math.round((Date.now() - startedAt) / 60000));
+    if (durationMin > 0 && durationMin < 600) meta.durationMin = durationMin;
+    saveSessionLog(today, sessionId, exerciseLogs, meta);
     clearProgress();
     setSaved(true);
   };
@@ -343,7 +444,89 @@ export default function Workout() {
             </svg>
           </div>
           <h2 className="finish-title">Séance terminée</h2>
-          <p className="finish-stats">{completedSets} / {totalSets} séries validées</p>
+          <p className="finish-stats">
+            {completedSets} / {totalSets} séries validées
+            <span className="finish-duration"> · {fmtDuration(nowTick - startedAt)}</span>
+          </p>
+
+          {/* Comparateur vs séance précédente */}
+          {comparison && comparison.rows.length > 0 && (
+            <div className="finish-block compare-block">
+              <label className="finish-label">vs séance précédente</label>
+              <div className="compare-list">
+                {comparison.rows.slice(0, 6).map((row) => {
+                  const dir = row.isFirstTime
+                    ? "new"
+                    : row.deltaMax > 0
+                    ? "up"
+                    : row.deltaMax < 0
+                    ? "down"
+                    : "same";
+                  return (
+                    <div key={row.exerciseId} className={`compare-row compare-${dir}`}>
+                      <span className="compare-name">{row.name}</span>
+                      <span className="compare-delta">
+                        {dir === "new" && "Nouveau"}
+                        {dir === "up" && `+${row.deltaMax} kg`}
+                        {dir === "down" && `${row.deltaMax} kg`}
+                        {dir === "same" && "Stable"}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Énergie / mood */}
+          <div className="finish-block">
+            <label className="finish-label">Comment tu te sens ?</label>
+            <div className="mood-row">
+              {[1, 2, 3, 4, 5].map((v) => (
+                <button
+                  key={v}
+                  className={`mood-btn ${mood === v ? "active" : ""}`}
+                  onClick={() => setMood(mood === v ? null : v)}
+                  aria-label={`Énergie ${v}/5`}
+                >
+                  {["😴", "😐", "🙂", "💪", "🔥"][v - 1]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Bodyweight (seulement si pas mesuré récemment) */}
+          {askBw && (
+            <div className="finish-block">
+              <label className="finish-label">Poids du jour (optionnel)</label>
+              <div className="finish-bw-wrap">
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  step="0.1"
+                  className="finish-input"
+                  value={bwInput}
+                  onChange={(e) => setBwInput(e.target.value)}
+                  placeholder="75.5"
+                />
+                <span className="finish-bw-unit">kg</span>
+              </div>
+            </div>
+          )}
+
+          {/* Note */}
+          <div className="finish-block">
+            <label className="finish-label">Note (optionnel)</label>
+            <input
+              type="text"
+              className="finish-input"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Ex : Bon ressenti, à reprendre…"
+              maxLength={200}
+            />
+          </div>
+
           <button className="finish-save-btn" onClick={handleSave}>Enregistrer</button>
         </div>
       </div>
@@ -363,13 +546,22 @@ export default function Workout() {
       {/* Header */}
       <header className="workout-header">
         <button className="back-btn" onClick={handleCancelRequest} aria-label="Quitter">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </button>
         <div className="workout-header-info">
           <h1 className="workout-title">{session.name.replace(/Séance \d+ — /, "")}</h1>
-          <span className="workout-counter">{completedSets}/{totalSets}</span>
+          <div className="workout-meta">
+            <span className="workout-chrono" aria-label="Durée de la séance">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 15 14" />
+              </svg>
+              {fmtDuration(nowTick - startedAt)}
+            </span>
+            <span className="workout-counter">{completedSets}/{totalSets}</span>
+          </div>
         </div>
       </header>
 
@@ -451,6 +643,19 @@ export default function Workout() {
             <span className="card-meta-rest">Repos {currentExercise.rest}</span>
           </div>
 
+          {/* Suggestion de charge */}
+          {suggestions[currentExercise.id]?.progress && (
+            <div className="suggestion-hint">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                <path d="M3 17l6-6 4 4 8-8" /><path d="M14 7h7v7" />
+              </svg>
+              <span>
+                +{suggestions[currentExercise.id].increment} kg suggéré
+                {" "}<small>(dernière fois : {suggestions[currentExercise.id].baseWeight} kg)</small>
+              </span>
+            </div>
+          )}
+
           {/* All sets */}
           <div className="card-sets">
             <div className="card-sets-header">
@@ -459,44 +664,169 @@ export default function Workout() {
               <span>Reps</span>
               <span></span>
             </div>
-            {currentSets.map((set, i) => (
-              <div key={i} className={`card-set-row ${set.done ? "done" : ""}`}>
-                <span className="card-set-num">{i + 1}</span>
+            {currentSets.map((set, i) => {
+              const rpeKey = `${currentExercise.id}-${i}`;
+              const showRpePicker = openRpeFor === rpeKey;
 
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  className="card-set-input"
-                  placeholder="kg"
-                  value={set.weight}
-                  onChange={(e) => updateField(currentExercise.id, i, "weight", e.target.value)}
-                />
+              // Mode compact pour les sets validés
+              if (set.done) {
+                return (
+                  <div key={i} className="card-set-row done compact">
+                    <span className="card-set-num">{i + 1}</span>
+                    <button
+                      className="card-set-summary"
+                      onClick={() => toggleDone(currentExercise.id, i, currentExercise.rest)}
+                      aria-label="Rouvrir ce set"
+                    >
+                      <span className="card-set-summary-main">
+                        {set.weight || "—"} kg <span className="dot">·</span> {set.reps || "—"}
+                      </span>
+                      {set.rpe && <span className="card-set-summary-rpe">RPE {set.rpe}</span>}
+                    </button>
+                    <button
+                      className="card-check checked"
+                      onClick={() => toggleDone(currentExercise.id, i, currentExercise.rest)}
+                      aria-label="Décocher"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden="true">
+                        <path d="M20 6L9 17l-5-5" />
+                      </svg>
+                    </button>
+                    {!set.rpe && (
+                      <div className="card-set-rpe-row">
+                        {showRpePicker ? (
+                          <div className="rpe-picker">
+                            <span className="rpe-picker-label">RPE</span>
+                            {RPE_VALUES.map((v) => (
+                              <button
+                                key={v}
+                                className="rpe-picker-btn"
+                                onClick={() => setRpe(currentExercise.id, i, v)}
+                              >
+                                {v}
+                              </button>
+                            ))}
+                            <button className="rpe-picker-close" onClick={() => setOpenRpeFor(null)} aria-label="Fermer">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        ) : (
+                          <button className="rpe-trigger" onClick={() => setOpenRpeFor(rpeKey)}>
+                            Noter l'effort
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
 
-                <div className="card-reps-stepper">
-                  <button className="reps-btn" onClick={() => adjustReps(currentExercise.id, i, -1)}>−</button>
+              return (
+                <div key={i} className="card-set-row">
+                  <span className="card-set-num">{i + 1}</span>
+
                   <input
                     type="number"
-                    inputMode="numeric"
-                    className="card-reps-input"
-                    value={set.reps}
-                    onChange={(e) => updateField(currentExercise.id, i, "reps", e.target.value)}
+                    inputMode="decimal"
+                    className="card-set-input"
+                    placeholder="kg"
+                    value={set.weight}
+                    onChange={(e) => updateField(currentExercise.id, i, "weight", e.target.value)}
                   />
-                  <button className="reps-btn" onClick={() => adjustReps(currentExercise.id, i, 1)}>+</button>
-                </div>
 
-                <button
-                  className={`card-check ${set.done ? "checked" : ""}`}
-                  onClick={() => toggleDone(currentExercise.id, i)}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <path d="M20 6L9 17l-5-5" />
-                  </svg>
-                </button>
-              </div>
-            ))}
+                  <div className="card-reps-stepper">
+                    <button className="reps-btn" onClick={() => adjustReps(currentExercise.id, i, -1)}>−</button>
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      className="card-reps-input"
+                      value={set.reps}
+                      onChange={(e) => updateField(currentExercise.id, i, "reps", e.target.value)}
+                    />
+                    <button className="reps-btn" onClick={() => adjustReps(currentExercise.id, i, 1)}>+</button>
+                  </div>
+
+                  <button
+                    className="card-check"
+                    onClick={() => toggleDone(currentExercise.id, i, currentExercise.rest)}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden="true">
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  </button>
+                </div>
+              );
+            })}
           </div>
 
-          {/* Notes */}
+          {/* Note perso (Phase C) */}
+          {(() => {
+            const personalNote = (notesVersion, getExerciseNote(currentExercise.id));
+            const startEditing = () => {
+              setNoteDraft(personalNote || "");
+              setEditingNote(true);
+            };
+            if (editingNote) {
+              return (
+                <div className="card-personal-note editing">
+                  <textarea
+                    className="card-personal-note-input"
+                    value={noteDraft}
+                    onChange={(e) => setNoteDraft(e.target.value)}
+                    placeholder="Ressenti, technique, charge cible…"
+                    maxLength={500}
+                    rows={2}
+                    autoFocus
+                  />
+                  <div className="card-personal-note-actions">
+                    <button
+                      className="card-personal-note-btn"
+                      onClick={() => { setEditingNote(false); setNoteDraft(""); }}
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      className="card-personal-note-btn primary"
+                      onClick={() => {
+                        saveExerciseNote(currentExercise.id, noteDraft);
+                        setEditingNote(false);
+                        setNoteDraft("");
+                        setNotesVersion((v) => v + 1);
+                      }}
+                    >
+                      Enregistrer
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+            if (personalNote) {
+              return (
+                <button className="card-personal-note" onClick={startEditing}>
+                  <span className="card-personal-note-label">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                    Note perso
+                  </span>
+                  <span className="card-personal-note-text">{personalNote}</span>
+                </button>
+              );
+            }
+            return (
+              <button className="card-add-note" onClick={startEditing}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                Ajouter une note perso
+              </button>
+            );
+          })()}
+
+          {/* Notes du programme */}
           {currentExercise.notes && (
             <p className="card-notes">{currentExercise.notes}</p>
           )}
@@ -525,6 +855,15 @@ export default function Workout() {
           </button>
         )}
       </div>
+
+      {/* Rest timer */}
+      {restTimerSec > 0 && (
+        <RestTimer
+          key={restTimerKey}
+          initialSec={restTimerSec}
+          onClose={() => setRestTimerSec(0)}
+        />
+      )}
 
       {/* Skip toast */}
       {skipToast && (
