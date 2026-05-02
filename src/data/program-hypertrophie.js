@@ -18,13 +18,13 @@ export const programHypertrophie = {
       name: "Lundi A — Haut du corps + abdos",
       day: "Lundi",
       muscleGroups: "Pectoraux, Dos, Épaules, Bras, Abdos",
-      duration: "~75 min",
+      duration: "75-85 min",
       warmup: "5 min vélo/rameur + 2 séries d'approche progressives sur le bench. Tempo contrôlé : excentrique 2 s, concentrique explosif. Abdos en fin de séance (jamais avant les compounds — stabilisateurs).",
       sections: [
         {
           title: "PECTORAUX",
           exercises: [
-            { id: "hyper-ha-1", name: "Bench press barre", sets: 4, reps: "6-8", rest: "2 min 30", notes: "Coudes 45-60°, légère pause poitrine, full ROM. RIR 2.", image: "developpe-couche" },
+            { id: "hyper-ha-1", name: "Bench press barre", sets: 5, reps: "6-8", rest: "2 min 30", notes: "Coudes 45-60°, légère pause poitrine, full ROM. RIR 2.", image: "developpe-couche" },
           ],
         },
         {
@@ -37,7 +37,7 @@ export const programHypertrophie = {
           title: "ÉPAULES",
           exercises: [
             { id: "hyper-ha-3", name: "Développé épaules haltères assis", sets: 3, reps: "8-10", rest: "2 min", notes: "Trajectoire neutre, pas de blocage coudes. RIR 2.", image: "developpe-militaire" },
-            { id: "hyper-ha-4", name: "Élévation latérale haltères", sets: 3, reps: "12-15", rest: "75s", notes: "Coude légèrement fléchi fixe, prise neutre. RIR 0-1.", image: "elevations-laterales" },
+            { id: "hyper-ha-4", name: "Élévation latérale haltères", sets: 4, reps: "12-15", rest: "75s", notes: "Coude légèrement fléchi fixe, prise neutre. RIR 0-1.", image: "elevations-laterales" },
           ],
         },
         {
@@ -66,7 +66,7 @@ export const programHypertrophie = {
       name: "Mercredi A — Full Body sans jambes + abdos",
       day: "Mercredi",
       muscleGroups: "Bras, Dos, Pec, Épaules, Abdos",
-      duration: "~85 min",
+      duration: "85-90 min",
       warmup: "Priming bras (2 séries légères biceps + 2 triceps) AVANT les compounds. Abdos en fin de séance (jamais avant les compounds).",
       sections: [
         {
@@ -98,7 +98,7 @@ export const programHypertrophie = {
         {
           title: "ÉPAULES",
           exercises: [
-            { id: "hyper-fa-7", name: "Élévation latérale câble (1 bras à la fois)", sets: 3, reps: "12-15", rest: "60s", notes: "Bras croise le corps en bas, tension constante. RIR 0-1.", image: "elevations-poulie" },
+            { id: "hyper-fa-7", name: "Élévation latérale câble (1 bras à la fois)", sets: 4, reps: "12-15", rest: "60s", notes: "Bras croise le corps en bas, tension constante. RIR 0-1.", image: "elevations-poulie" },
             { id: "hyper-fa-8", name: "Élévation postérieure machine (reverse pec deck)", sets: 3, reps: "12-15", rest: "60s", notes: "Pause 1 s en contraction. RIR 0-1.", image: "oiseau" },
           ],
         },
@@ -116,7 +116,7 @@ export const programHypertrophie = {
       name: "Vendredi A — Bas du corps (lourd) + abdos",
       day: "Vendredi",
       muscleGroups: "Quadriceps, Ischios, Glutes, Mollets, Abdos",
-      duration: "~95 min",
+      duration: "95-100 min",
       warmup: "2 séries d'approche sur le squat. Étirements mollets si raide. Profondeur cuisses sous parallèle obligatoire. Abdos en fin de séance.",
       sections: [
         {
@@ -138,7 +138,7 @@ export const programHypertrophie = {
           title: "MOLLETS",
           exercises: [
             { id: "hyper-ba-6", name: "Standing calf raise + 5-8 partielles allongées", sets: 4, reps: "8-10", rest: "1 min 30", notes: "Excentrique lent, pause 2 s en bas. Partielles allongées dernière série (Kassiano 2023). Tempo 2-1-1-2.", image: "mollets-debout" },
-            { id: "hyper-ba-7", name: "Seated calf raise", sets: 3, reps: "12-15", rest: "60s", notes: "Genou fléchi cible le soléaire (Maeo 2023). RIR 0-1.", image: "mollets-assis" },
+            { id: "hyper-ba-7", name: "Seated calf raise", sets: 4, reps: "12-15", rest: "60s", notes: "Genou fléchi cible le soléaire (Maeo 2023). RIR 0-1.", image: "mollets-assis" },
           ],
         },
         {
@@ -152,12 +152,12 @@ export const programHypertrophie = {
     },
     {
       id: "hyper-bras-a",
-      name: "Samedi A — Spé Bras (bonus)",
+      name: "Samedi A — Spé Bras (bonus) + abdos",
       day: "Samedi",
-      muscleGroups: "Biceps, Triceps, Brachial",
-      duration: "~50 min",
+      muscleGroups: "Biceps, Triceps, Brachial, Abdos",
+      duration: "~55 min",
       bonus: true,
-      warmup: "Format supersets antagonistes biceps/triceps (Coleman 2024). Bonus optionnel — skip si fatigue accumulée.",
+      warmup: "Format supersets antagonistes biceps/triceps (Coleman 2024). Bonus optionnel — skip si fatigue accumulée. Abdos en fin de séance.",
       sections: [
         {
           title: "SUPERSET A — ÉTIRÉ",
@@ -180,6 +180,13 @@ export const programHypertrophie = {
             { id: "hyper-bra-6", name: "C2. Kickback haltère ou câble", sets: 3, reps: "12-15", rest: "60s", notes: "Pause 1 s coude verrouillé. RIR 0. Tempo 2-0-1-1.", image: "kickback" },
           ],
         },
+        {
+          title: "ABDOMINAUX",
+          exercises: [
+            { id: "hyper-bra-7", name: "Cable crunch", sets: 3, reps: "12-15", rest: "60s", notes: "À genoux, flexion complète, hanches fixes. RIR 1.", image: "crunch-machine" },
+            { id: "hyper-bra-8", name: "Side plank (gainage latéral)", sets: 3, reps: "25-35s/côté", rest: "30s", notes: "Corps aligné, hanches hautes, scapula stable. Obliques.", image: "side-plank" },
+          ],
+        },
       ],
     },
     // ─────────────────────────────────────────
@@ -190,13 +197,13 @@ export const programHypertrophie = {
       name: "Lundi B — Haut du corps (incliné/verticale) + abdos",
       day: "Lundi",
       muscleGroups: "Pec haut, Dos, Épaules, Bras, Abdos",
-      duration: "~75 min",
+      duration: "75-85 min",
       warmup: "Variation Sem B : focus pec clavic. (incliné 30°) + verticale (militaire). Tempo contrôlé. Abdos en fin de séance.",
       sections: [
         {
           title: "PECTORAUX",
           exercises: [
-            { id: "hyper-hb-1", name: "Développé incliné haltères 30°", sets: 4, reps: "8-10", rest: "2 min 30", notes: "30°, pas 45° (Rodríguez-Ridao 2020). Haltères pour étirement profond. RIR 2.", image: "developpe-incline" },
+            { id: "hyper-hb-1", name: "Développé incliné haltères 30°", sets: 5, reps: "8-10", rest: "2 min 30", notes: "30°, pas 45° (Rodríguez-Ridao 2020). Haltères pour étirement profond. RIR 2.", image: "developpe-incline" },
           ],
         },
         {
@@ -238,7 +245,7 @@ export const programHypertrophie = {
       name: "Mercredi B — Full Body sans jambes + abdos",
       day: "Mercredi",
       muscleGroups: "Bras, Dos, Pec, Épaules, Abdos",
-      duration: "~85 min",
+      duration: "85-90 min",
       warmup: "Priming bras (2+2). Variante Sem B : épaisseur dos (rowing barre) + bench prise serrée + pull-over. Abdos en fin de séance.",
       sections: [
         {
@@ -271,7 +278,7 @@ export const programHypertrophie = {
         {
           title: "ÉPAULES",
           exercises: [
-            { id: "hyper-fb-8", name: "Élévation latérale machine", sets: 3, reps: "12-15", rest: "60s", notes: "Tension constante, top contraction. RIR 0-1.", image: "elevations-laterales" },
+            { id: "hyper-fb-8", name: "Élévation latérale machine", sets: 4, reps: "12-15", rest: "60s", notes: "Tension constante, top contraction. RIR 0-1.", image: "elevations-laterales" },
             { id: "hyper-fb-9", name: "Face pull câble", sets: 3, reps: "12-15", rest: "60s", notes: "Coudes hauts, pouces vers l'arrière. Delts post + rotateurs. RIR 0-1.", image: "face-pull" },
           ],
         },
@@ -289,7 +296,7 @@ export const programHypertrophie = {
       name: "Vendredi B — Bas du corps (glutes / ischios) + abdos",
       day: "Vendredi",
       muscleGroups: "Quadriceps, Ischios, Glutes, Mollets, Abdos",
-      duration: "~95 min",
+      duration: "95-100 min",
       warmup: "Variante Sem B : deadlift dédié + travail unilatéral + biais glutes/ischios. Forme stricte sur deadlift, non-bouncing. Abdos en fin de séance.",
       sections: [
         {
@@ -316,7 +323,7 @@ export const programHypertrophie = {
           title: "MOLLETS",
           exercises: [
             { id: "hyper-bb-6", name: "Leg press calf raise + drop set dernière série", sets: 3, reps: "8-10", rest: "1 min 30", notes: "DROP SET sur la dernière série (intro intensification, Sem 4+). Tempo 2-1-1-2.", image: "leg-press-calf" },
-            { id: "hyper-bb-7", name: "Standing calf raise + 5 partielles allongées", sets: 3, reps: "10-12", rest: "60s", notes: "Partielles allongées dernière série (Kassiano 2023). Tempo 2-1-1-2.", image: "mollets-debout" },
+            { id: "hyper-bb-7", name: "Standing calf raise + 5 partielles allongées", sets: 4, reps: "10-12", rest: "60s", notes: "Partielles allongées dernière série (Kassiano 2023). Tempo 2-1-1-2.", image: "mollets-debout" },
           ],
         },
         {
@@ -330,12 +337,12 @@ export const programHypertrophie = {
     },
     {
       id: "hyper-bras-b",
-      name: "Samedi B — Spé Bras (angles complémentaires)",
+      name: "Samedi B — Spé Bras (angles complémentaires) + abdos",
       day: "Samedi",
-      muscleGroups: "Biceps, Triceps, Brachial",
-      duration: "~50 min",
+      muscleGroups: "Biceps, Triceps, Brachial, Abdos",
+      duration: "~55 min",
       bonus: true,
-      warmup: "Variante Sem B : angles complémentaires + drop sets sur les finitions (Sem 4+). Skip si fatigue.",
+      warmup: "Variante Sem B : angles complémentaires + drop sets sur les finitions (Sem 4+). Skip si fatigue. Abdos en fin de séance.",
       sections: [
         {
           title: "SUPERSET A — VOLUME",
@@ -358,6 +365,13 @@ export const programHypertrophie = {
             { id: "hyper-brb-6", name: "C2. Pushdown corde + DROP SET", sets: 3, reps: "15-20", rest: "75s", notes: "Drop set 25 % poids dernière série → échec. Tempo 2-0-1-1.", image: "extension-poulie" },
           ],
         },
+        {
+          title: "ABDOMINAUX",
+          exercises: [
+            { id: "hyper-brb-7", name: "Hanging leg raise (suspendu)", sets: 3, reps: "8-12", rest: "60s", notes: "Jambes tendues si possible, contrôle de la descente. RIR 1.", image: "releves-jambes" },
+            { id: "hyper-brb-8", name: "Planche", sets: 3, reps: "30-45s", rest: "45s", notes: "Corps aligné, abdos contractés, pas de cassure lombaire.", image: "gainage-planche" },
+          ],
+        },
       ],
     },
   ],
@@ -377,7 +391,7 @@ export const programHypertrophieInfo = {
   programId: "hypertrophie",
   title: "Hypertrophie 2 semaines",
   subtitle: "Biais bras et jambes — débutant éclairé",
-  version: "v4",
+  version: "v4.1 FINAL",
   duration: "8 semaines + 1 deload",
 
   overview: {
@@ -385,37 +399,39 @@ export const programHypertrophieInfo = {
     profile: "Lean ectomorphe (1m92 / 81 kg)",
     sessions: "4 séances / sem · alternance Sem A / Sem B",
     priority: "Bras 18-21 séries · Jambes 10-12 séries directes + indirect lourd",
-    novelty: "Abdos en fin de séance avec rotation machine + gainage entre A et B.",
+    novelty: "v4.1 : pec +1 série, delts lat +2 séries, mollets +2 séries → tous les groupes en MEV-MAV (Israetel 2024).",
   },
 
   schedule: [
-    { day: "Lundi",    session: "Haut + abdos",                   duration: "70-80 min", emoji: "💪" },
+    { day: "Lundi",    session: "Haut + abdos",                   duration: "75-85 min", emoji: "💪" },
     { day: "Mardi",    session: "Repos",                           duration: "—",         emoji: "😴" },
-    { day: "Mercredi", session: "Full Body sans jambes + abdos",  duration: "80-90 min", emoji: "🔁" },
+    { day: "Mercredi", session: "Full Body sans jambes + abdos",  duration: "85-90 min", emoji: "🔁" },
     { day: "Jeudi",    session: "Repos",                           duration: "—",         emoji: "😴" },
-    { day: "Vendredi", session: "Bas du corps + abdos",           duration: "90-100 min", emoji: "🦵" },
-    { day: "Samedi",   session: "Spé Bras (bonus optionnel)",     duration: "45-60 min", emoji: "🔥" },
+    { day: "Vendredi", session: "Bas du corps + abdos",           duration: "95-100 min", emoji: "🦵" },
+    { day: "Samedi",   session: "Spé Bras (bonus) + abdos",       duration: "55-60 min", emoji: "🔥" },
     { day: "Dimanche", session: "Repos",                           duration: "—",         emoji: "😴" },
   ],
 
   abdosRotation: [
-    { day: "Lundi",    exercises: "Abdo crunch machine + Planche" },
+    { day: "Lundi",    exercises: "Crunch machine + Planche" },
     { day: "Mercredi", exercises: "Cable crunch + Side plank" },
     { day: "Vendredi", exercises: "Hanging leg raise + Crunch machine" },
+    { day: "Samedi A", exercises: "Cable crunch + Side plank" },
+    { day: "Samedi B", exercises: "Hanging leg raise + Planche" },
   ],
 
   volumeTable: [
-    { muscle: "Biceps",            weekly: "18-20", freq: "3-4×",  target: "MAV haut", priority: true },
-    { muscle: "Triceps",           weekly: "18-21", freq: "3-4×",  target: "MAV haut", priority: true },
+    { muscle: "Biceps",            weekly: "18",    freq: "3-4×",  target: "MAV haut", priority: true },
+    { muscle: "Triceps",           weekly: "18-21", freq: "3×",    target: "MAV haut", priority: true },
     { muscle: "Quadriceps",        weekly: "10-12", freq: "1-2×",  target: "MAV",      priority: true },
     { muscle: "Ischios",           weekly: "6-7",   freq: "1-2×",  target: "MEV-MAV",  priority: false },
     { muscle: "Glutes",            weekly: "10-13", freq: "1-2×",  target: "MAV",      priority: false },
-    { muscle: "Pectoraux",         weekly: "7-8",   freq: "2×",    target: "MEV-MAV",  priority: false },
+    { muscle: "Pectoraux",         weekly: "9",     freq: "2×",    target: "MEV",      priority: false },
     { muscle: "Dos",               weekly: "8-11",  freq: "2×",    target: "MAV",      priority: false },
-    { muscle: "Delts latéraux",    weekly: "6-7",   freq: "2×",    target: "MEV",      priority: false },
+    { muscle: "Delts latéraux",    weekly: "8-9",   freq: "2×",    target: "MEV",      priority: false },
     { muscle: "Delts postérieurs", weekly: "6",     freq: "2×",    target: "MEV",      priority: false },
-    { muscle: "Mollets",           weekly: "7",     freq: "1-2×",  target: "MEV",      priority: false },
-    { muscle: "Abdos",             weekly: "8-9",   freq: "3×",    target: "MEV-MAV",  priority: false },
+    { muscle: "Mollets",           weekly: "8",     freq: "1-2×",  target: "MEV",      priority: false },
+    { muscle: "Abdos",             weekly: "9-12",  freq: "3-4×",  target: "MAV",      priority: false },
   ],
 
   nutrition: {

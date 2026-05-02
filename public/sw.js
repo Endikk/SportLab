@@ -20,6 +20,9 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
 
+  // Ignorer les schémas non cachables (chrome-extension://, ws://, etc.)
+  if (url.protocol !== "http:" && url.protocol !== "https:") return;
+
   if (url.pathname.startsWith("/assets/")) {
     event.respondWith(
       caches.match(request).then((cached) => {

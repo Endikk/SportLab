@@ -84,14 +84,21 @@ export function getRecentSessions() {
     .sort((a, b) => b.timestamp - a.timestamp);
 }
 
-// Parse "8-10" → 10, "12-15" → 15, "6-10" → 10, "12/côté" → 12
-// Returns null for time-based reps like "45-60s"
+// Parse "8-10" → 10, "12-15" → 15, "6-10" → 10, "12/côté" → 12, "30-45s" → 45
+// Retourne le nombre haut de la fourchette (utilisé pour pré-remplir l'input numérique)
 export function parseMaxReps(repsStr) {
-  if (!repsStr || repsStr.includes("s")) return null;
+  if (!repsStr) return null;
   const cleaned = repsStr.replace(/\/côté/i, "");
   const match = cleaned.match(/(\d+)(?:\s*[-–]\s*(\d+))?/);
   if (!match) return null;
   return parseInt(match[2] || match[1]);
+}
+
+// Détecte si un exo se fait typiquement au poids du corps (peut être lesté)
+// Utilisé pour afficher "PC" plutôt que "kg" quand le poids est vide.
+export function isBodyweightExercise(exerciseName) {
+  if (!exerciseName) return false;
+  return /planche|traction|hanging|crunch|relev[ée]|gainage|pompe|side plank|dips lest/i.test(exerciseName);
 }
 
 // Parse "2 min 30" → 150, "1 min" → 60, "45s" → 45
@@ -623,11 +630,19 @@ export function getStatsForPeriod(period) {
   const logs = logsInPeriod(period);
   let totalVolume = 0;
   let totalSetsDone = 0;
+  let totalReps = 0;
+  let totalDuration = 0;
+  let durationCount = 0;
   for (const log of logs) {
+    if (log.durationMin) {
+      totalDuration += log.durationMin;
+      durationCount++;
+    }
     for (const ex of Object.values(log.exercises || {})) {
       for (const s of ex.sets || []) {
         if (!s.done) continue;
         totalSetsDone++;
+        totalReps += Number(s.reps) || 0;
         totalVolume += (Number(s.weight) || 0) * (Number(s.reps) || 0);
       }
     }
@@ -639,6 +654,11 @@ export function getStatsForPeriod(period) {
     sessionsPlanned: planned,
     totalVolume: Math.round(totalVolume),
     totalSetsDone,
+    totalReps,
+    avgVolumePerSession: logs.length > 0 ? Math.round(totalVolume / logs.length) : 0,
+    avgDurationMin: durationCount > 0 ? Math.round(totalDuration / durationCount) : null,
+    avgRepsPerSet: totalSetsDone > 0 ? Math.round((totalReps / totalSetsDone) * 10) / 10 : 0,
+    avgWeightLifted: totalReps > 0 ? Math.round((totalVolume / totalReps) * 10) / 10 : 0,
     adherence: planned ? Math.min(100, Math.round((logs.length / planned) * 100)) : null,
   };
 }
@@ -892,4 +912,215 @@ export function compareWithPreviousSession(sessionId, currentLogs) {
     });
   }
   return { previousDate: previous.date, rows };
+}
+
+// ─── Variant A/B automatique selon semaine ISO ───
+// Semaine ISO impaire = A · paire = B
+export function getISOWeek(date = new Date()) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+export function getCurrentWeekVariant() {
+  return getISOWeek() % 2 === 0 ? "b" : "a";
+}
+
+// Retourne le schedule du programme actif avec les bonnes sessions A/B
+export function getActiveSchedule(programId = ACTIVE_PROGRAM.id) {
+  const prog = PROGRAMS.find((p) => p.id === programId);
+  if (!prog) return [];
+  const variant = getCurrentWeekVariant();
+  return prog.schedule.map((item) => ({
+    ...item,
+    session: item.session ? item.session.replace(/-a$/, `-${variant}`).replace(/-b$/, `-${variant}`) : null,
+  }));
+}
+
+// ─── Séance libre (freestyle) — sélection ad-hoc d'exos ───
+// On crée une "session custom" temporaire avec les exos choisis (gardent leurs IDs originaux
+// pour que les logs s'agrègent à leur historique).
+export function createFreestyleSession(exerciseIds) {
+  if (!Array.isArray(exerciseIds) || exerciseIds.length === 0) {
+    throw new Error("Sélectionne au moins un exercice");
+  }
+  const exercises = exerciseIds
+    .map((id) => findExerciseById(id)?.exercise)
+    .filter(Boolean);
+  if (!exercises.length) throw new Error("Aucun exercice trouvé");
+
+  const today = new Date();
+  const dateStr = today.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+  const id = `freestyle-${today.getTime().toString(36)}`;
+
+  const session = {
+    id,
+    name: `Séance libre · ${dateStr}`,
+    day: today.toLocaleDateString("fr-FR", { weekday: "long" }),
+    muscleGroups: "",
+    duration: "",
+    type: "custom",
+    emoji: "LIBRE",
+    gradient: ["#9333EA", "#A855F7"],
+    freestyle: true,
+    sections: [
+      {
+        title: "EXERCICES",
+        exercises: exercises.map((ex) => ({
+          id: ex.id,
+          name: ex.name,
+          sets: Number(ex.sets) || 3,
+          reps: String(ex.reps || "10"),
+          rest: String(ex.rest || "1 min"),
+          notes: ex.notes || "",
+          kind: ex.kind || "sets-reps",
+          ...(ex.image ? { image: ex.image } : {}),
+        })),
+      },
+    ],
+  };
+
+  // Persistance via la couche custom existante (saveCustomSession nettoie + valide)
+  return saveCustomSession(session);
+}
+
+// Catalogue d'exercices unique pour la sélection (dédupliqué par nom)
+export function getExerciseCatalog() {
+  const seen = new Set();
+  const catalog = [];
+  for (const session of getAllSessions()) {
+    if (session.freestyle) continue;
+    for (const sec of session.sections || []) {
+      for (const ex of sec.exercises || []) {
+        const key = ex.name.trim().toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        catalog.push({
+          id: ex.id,
+          name: ex.name,
+          image: ex.image,
+          sets: ex.sets,
+          reps: ex.reps,
+          rest: ex.rest,
+          sectionTitle: sec.title,
+          muscleGroup: getMuscleGroupForSection(sec.title),
+        });
+      }
+    }
+  }
+  return catalog.sort((a, b) => a.muscleGroup.localeCompare(b.muscleGroup) || a.name.localeCompare(b.name));
+}
+
+// Top N exercices par fréquence sur la période
+export function getTopExercises(period = "28d", limit = 5) {
+  const logs = logsInPeriod(period);
+  const map = {};
+  for (const log of logs) {
+    for (const [exId, exLog] of Object.entries(log.exercises || {})) {
+      if (exId.startsWith("extra-")) continue; // skip cardio extras one-shot
+      if (!map[exId]) {
+        map[exId] = { exerciseId: exId, count: 0, maxWeight: 0, totalVolume: 0, totalReps: 0, lastDate: log.date };
+      }
+      map[exId].count++;
+      if (new Date(log.date) > new Date(map[exId].lastDate)) map[exId].lastDate = log.date;
+      for (const s of exLog.sets || []) {
+        if (!s.done) continue;
+        const w = Number(s.weight) || 0;
+        const r = Number(s.reps) || 0;
+        if (w > map[exId].maxWeight) map[exId].maxWeight = w;
+        map[exId].totalVolume += w * r;
+        map[exId].totalReps += r;
+      }
+    }
+  }
+  return Object.values(map)
+    .map((m) => {
+      const found = findExerciseById(m.exerciseId);
+      return {
+        ...m,
+        name: found?.exercise?.name || m.exerciseId,
+        muscleGroup: getMuscleGroupForExerciseId(m.exerciseId),
+        avgWeight: m.totalReps > 0 ? Math.round((m.totalVolume / m.totalReps) * 10) / 10 : 0,
+      };
+    })
+    .sort((a, b) => b.count - a.count || b.totalVolume - a.totalVolume)
+    .slice(0, limit);
+}
+
+// PR battus récemment (dans la période), triés du plus récent au plus ancien
+export function getRecentPRs(period = "28d", limit = 5) {
+  const days = PERIOD_DAYS[period] ?? null;
+  const cutoff = days ? Date.now() - days * 86400000 : 0;
+  const allLogs = Object.values(getAllLogs()).sort(
+    (a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0)
+  );
+  const recordsByEx = {};
+  const prs = [];
+  for (const log of allLogs) {
+    const ts = log.timestamp ?? new Date(log.date + "T12:00:00").getTime();
+    for (const [exId, exLog] of Object.entries(log.exercises || {})) {
+      if (exId.startsWith("extra-")) continue;
+      let sessionMax = 0;
+      for (const s of exLog.sets || []) {
+        const w = Number(s.weight) || 0;
+        if (w > sessionMax) sessionMax = w;
+      }
+      if (sessionMax === 0) continue;
+      const prev = recordsByEx[exId] || 0;
+      if (sessionMax > prev) {
+        recordsByEx[exId] = sessionMax;
+        if (ts >= cutoff && prev > 0) {
+          prs.push({
+            exerciseId: exId,
+            name: findExerciseById(exId)?.exercise?.name || exId,
+            weight: sessionMax,
+            previousMax: prev,
+            delta: Math.round((sessionMax - prev) * 10) / 10,
+            date: log.date,
+            timestamp: ts,
+          });
+        }
+      }
+    }
+  }
+  return prs.sort((a, b) => b.timestamp - a.timestamp).slice(0, limit);
+}
+
+// Heatmap calendrier — N semaines de 7 jours (matrice [semaine][jour])
+export function getTrainingHeatmap(weeks = 12) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const trainedDates = new Set();
+  for (const log of Object.values(getAllLogs())) {
+    if (log.date) trainedDates.add(log.date);
+  }
+
+  // Lundi de cette semaine
+  const dayOfWeek = today.getDay() || 7; // 1-7
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dayOfWeek - 1));
+
+  const startDate = new Date(monday);
+  startDate.setDate(monday.getDate() - (weeks - 1) * 7);
+
+  const matrix = [];
+  for (let w = 0; w < weeks; w++) {
+    const week = [];
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + w * 7 + d);
+      const dateStr = date.toLocaleDateString("fr-CA");
+      week.push({
+        date: dateStr,
+        trained: trainedDates.has(dateStr),
+        isFuture: date > today,
+        isToday: date.getTime() === today.getTime(),
+      });
+    }
+    matrix.push(week);
+  }
+  return matrix;
 }

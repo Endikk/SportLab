@@ -12,10 +12,12 @@ import {
   compareWithPreviousSession,
   getExerciseNote,
   saveExerciseNote,
+  isBodyweightExercise,
 } from "../utils/storage";
 import { getGradient, getIconPath } from "../utils/exerciseVisuals";
 import ExerciseImage from "../components/ExerciseImage";
 import RestTimer from "../components/RestTimer";
+import ExerciseCatalogPicker from "../components/ExerciseCatalogPicker";
 
 const RPE_VALUES = [6, 7, 8, 9, 10];
 
@@ -71,13 +73,15 @@ export default function Workout() {
   const navigate = useNavigate();
   const session = findSessionById(sessionId);
 
-  const allExercises = session
-    ? session.sections.flatMap((s) => s.exercises)
-    : [];
+  const baseExercises = session ? session.sections.flatMap((s) => s.exercises) : [];
+
+  // Extras piochés dans le catalogue pendant la séance (ajoutent des exos en fin)
+  const [extraExercises, setExtraExercises] = useState([]);
+  const allExercises = [...baseExercises, ...extraExercises];
 
   const [exerciseLogs, setExerciseLogs] = useState({});
   const [exerciseIdx, setExerciseIdx] = useState(0);
-  const [exerciseOrder, setExerciseOrder] = useState(() => allExercises.map((_, i) => i));
+  const [exerciseOrder, setExerciseOrder] = useState(() => baseExercises.map((_, i) => i));
   const [saved, setSaved] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [exitDir, setExitDir] = useState(null);
@@ -109,6 +113,48 @@ export default function Workout() {
   const [editingNote, setEditingNote] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
   const [notesVersion, setNotesVersion] = useState(0);
+
+  // Extras — modale catalogue
+  const [showCatalog, setShowCatalog] = useState(false);
+
+  const handlePickExtra = (exercise) => {
+    // Si déjà dans la séance : on navigue vers cet exo
+    if (exerciseLogs[exercise.id]) {
+      const idxInAll = allExercises.findIndex((e) => e.id === exercise.id);
+      const orderIdx = exerciseOrder.indexOf(idxInAll);
+      if (orderIdx >= 0) {
+        setExerciseIdx(orderIdx);
+        setAllDone(false);
+        setShowCatalog(false);
+        setCardKey((k) => k + 1);
+      }
+      return;
+    }
+
+    // Init des sets pour ce nouvel exo (avec last log si dispo)
+    const last = getLastLogForExercise(exercise.id);
+    const maxReps = parseMaxReps(exercise.reps);
+    const sets = [];
+    const numSets = Number(exercise.sets) || 3;
+    for (let i = 0; i < numSets; i++) {
+      sets.push({
+        weight: last?.sets?.[i]?.weight ?? "",
+        reps: maxReps !== null ? String(maxReps) : exercise.reps || "",
+        done: false,
+      });
+    }
+
+    // Le nouvel exo s'insère à la fin de allExercises
+    const newIndexInAll = allExercises.length;
+
+    setExtraExercises((prev) => [...prev, exercise]);
+    setExerciseLogs((prev) => ({ ...prev, [exercise.id]: { sets } }));
+    setExerciseOrder((prev) => [...prev, newIndexInAll]);
+    setExerciseIdx(exerciseOrder.length); // dernier index dans le nouveau order
+    setAllDone(false);
+    setShowCatalog(false);
+    setCardKey((k) => k + 1);
+  };
 
   useEffect(() => {
     const id = setInterval(() => setNowTick(Date.now()), 1000);
@@ -349,6 +395,7 @@ export default function Workout() {
     }
     const durationMin = Math.max(1, Math.round((Date.now() - startedAt) / 60000));
     if (durationMin > 0 && durationMin < 600) meta.durationMin = durationMin;
+
     saveSessionLog(today, sessionId, exerciseLogs, meta);
     clearProgress();
     setSaved(true);
@@ -478,6 +525,22 @@ export default function Workout() {
             </div>
           )}
 
+          {/* Ajouter un exo en plus (cardio, autre exo, etc.) */}
+          <div className="finish-block">
+            <label className="finish-label">Tu as fait autre chose ?</label>
+            <button className="extra-add-btn" onClick={() => setShowCatalog(true)}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>Ajouter un exo en plus</span>
+            </button>
+            {extraExercises.length > 0 && (
+              <p className="extras-summary">
+                {extraExercises.length} exo{extraExercises.length > 1 ? "s" : ""} ajouté{extraExercises.length > 1 ? "s" : ""} à la séance
+              </p>
+            )}
+          </div>
+
           {/* Énergie / mood */}
           <div className="finish-block">
             <label className="finish-label">Comment tu te sens ?</label>
@@ -529,6 +592,16 @@ export default function Workout() {
 
           <button className="finish-save-btn" onClick={handleSave}>Enregistrer</button>
         </div>
+
+        {/* Catalogue d'exos pour ajouter en plus */}
+        {showCatalog && (
+          <ExerciseCatalogPicker
+            onPick={handlePickExtra}
+            onClose={() => setShowCatalog(false)}
+            excludeIds={Object.keys(exerciseLogs)}
+            title="Ajouter un exo à ta séance"
+          />
+        )}
       </div>
     );
   }
@@ -679,7 +752,7 @@ export default function Workout() {
                       aria-label="Rouvrir ce set"
                     >
                       <span className="card-set-summary-main">
-                        {set.weight || "—"} kg <span className="dot">·</span> {set.reps || "—"}
+                        {set.weight ? `${set.weight} kg` : (isBodyweightExercise(currentExercise.name) ? "PC" : "—")} <span className="dot">·</span> {set.reps || "—"}
                       </span>
                       {set.rpe && <span className="card-set-summary-rpe">RPE {set.rpe}</span>}
                     </button>
@@ -731,7 +804,7 @@ export default function Workout() {
                     type="number"
                     inputMode="decimal"
                     className="card-set-input"
-                    placeholder="kg"
+                    placeholder={isBodyweightExercise(currentExercise.name) ? "PC ou kg" : "kg"}
                     value={set.weight}
                     onChange={(e) => updateField(currentExercise.id, i, "weight", e.target.value)}
                   />
@@ -879,6 +952,16 @@ export default function Workout() {
           <ExerciseImage name={currentExercise.image} alt={currentExercise.name} className="image-viewer-img" />
           <p className="image-viewer-name">{currentExercise.name}</p>
         </div>
+      )}
+
+      {/* Catalogue d'exos (ajout en plus pendant la séance) */}
+      {showCatalog && (
+        <ExerciseCatalogPicker
+          onPick={handlePickExtra}
+          onClose={() => setShowCatalog(false)}
+          excludeIds={Object.keys(exerciseLogs)}
+          title="Ajouter un exo à ta séance"
+        />
       )}
 
       {/* Cancel session modal */}

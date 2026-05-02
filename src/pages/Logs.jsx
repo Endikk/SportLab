@@ -12,6 +12,10 @@ import { getSessionVisual } from "../utils/exerciseVisuals";
 import BarChart from "../components/BarChart";
 import BodyweightCard from "../components/BodyweightCard";
 import MuscleVolumeBars from "../components/MuscleVolumeBars";
+import TopExercises from "../components/TopExercises";
+import RecentPRs from "../components/RecentPRs";
+import TrainingHeatmap from "../components/TrainingHeatmap";
+import HeroStat from "../components/HeroStat";
 
 const PERIODS = [
   { id: "7d", label: "7 jours" },
@@ -167,50 +171,82 @@ export default function Logs() {
 
           {/* Hero stats — 4 cartes compactes */}
           <div className="hero-stats">
-            <div className="hero-stat">
-              <span className="hero-stat-label">Séances</span>
-              <span className="hero-stat-value">
-                {stats.sessionsDone}
-                {stats.sessionsPlanned !== null && (
-                  <span className="hero-stat-sub">/{stats.sessionsPlanned}</span>
-                )}
-              </span>
-              <span className="hero-stat-hint">sur la période</span>
-            </div>
+            <HeroStat
+              label="Séances"
+              value={stats.sessionsDone}
+              sub={stats.sessionsPlanned !== null ? `/${stats.sessionsPlanned}` : null}
+              hint="sur la période"
+              info="Nombre de séances enregistrées sur la période. Le second nombre est le total prévu selon le calendrier hebdomadaire (4 séances/sem)."
+            />
             {stats.adherence !== null ? (
-              <div className="hero-stat">
-                <span className="hero-stat-label">Adhérence</span>
-                <span className="hero-stat-value" style={{ color: stats.adherence >= 75 ? "var(--green)" : stats.adherence >= 50 ? "var(--accent)" : "var(--red)" }}>
-                  {stats.adherence}<span className="hero-stat-sub">%</span>
-                </span>
-                <span className="hero-stat-hint">vs prévu</span>
-              </div>
+              <HeroStat
+                label="Adhérence"
+                value={stats.adherence}
+                sub="%"
+                hint="vs prévu"
+                color={stats.adherence >= 75 ? "var(--green)" : stats.adherence >= 50 ? "var(--accent)" : "var(--red)"}
+                info="% de séances réalisées par rapport au calendrier prévu. ≥75 % = bon, 50-75 % = correct, <50 % = à rattraper."
+              />
             ) : (
-              <div className="hero-stat">
-                <span className="hero-stat-label">Streak</span>
-                <span className="hero-stat-value" style={{ color: streak > 0 ? "var(--accent)" : "var(--text-3)" }}>
-                  {streak}
-                </span>
-                <span className="hero-stat-hint">{streak > 1 ? "semaines" : "semaine"} d'affilée</span>
-              </div>
+              <HeroStat
+                label="Streak"
+                value={streak}
+                hint={`${streak > 1 ? "semaines" : "semaine"} d'affilée`}
+                color={streak > 0 ? "var(--accent)" : "var(--text-3)"}
+                info="Nombre de semaines consécutives avec au moins une séance, jusqu'à aujourd'hui."
+              />
             )}
-            <div className="hero-stat">
-              <span className="hero-stat-label">Volume</span>
-              <span className="hero-stat-value">{formatBigNumber(stats.totalVolume)}</span>
-              <span className="hero-stat-hint">kg cumulés</span>
-            </div>
-            <div className="hero-stat">
-              <span className="hero-stat-label">Séries</span>
-              <span className="hero-stat-value">{stats.totalSetsDone}</span>
-              <span className="hero-stat-hint">validées</span>
-            </div>
+            <HeroStat
+              label="Volume"
+              value={formatBigNumber(stats.totalVolume)}
+              hint="kg cumulés"
+              info="Tonnage total soulevé sur la période. Calcul : Σ (poids × reps) de toutes les séries validées."
+            />
+            <HeroStat
+              label="Séries"
+              value={stats.totalSetsDone}
+              hint="validées"
+              info="Nombre total de séries (sets) cochées comme faites sur la période."
+            />
+          </div>
+
+          {/* Hero stats moyennes — 3 cartes complémentaires */}
+          <div className="hero-stats hero-stats-3">
+            <HeroStat
+              label="Vol / séance"
+              value={formatBigNumber(stats.avgVolumePerSession)}
+              hint="kg en moyenne"
+              info="Volume moyen soulevé par séance. Indicateur de l'intensité moyenne de tes entraînements."
+            />
+            <HeroStat
+              label="Durée moy."
+              value={stats.avgDurationMin !== null ? stats.avgDurationMin : "—"}
+              sub={stats.avgDurationMin !== null ? "min" : null}
+              hint="par séance"
+              info="Durée moyenne d'une séance, basée sur le chrono lancé pendant chaque entraînement (les anciennes séances sans chrono ne comptent pas)."
+            />
+            <HeroStat
+              label="Charge moy."
+              value={stats.avgWeightLifted || "—"}
+              hint="kg / rep"
+              info="Poids moyen soulevé par rep. Calcul : volume total ÷ reps totales. Reflète la charge typique de travail."
+            />
           </div>
 
           {/* Bodyweight */}
           <BodyweightCard />
 
+          {/* PR récents — très motivant */}
+          <RecentPRs period={period} limit={3} />
+
+          {/* Top exercices */}
+          <TopExercises period={period} limit={5} />
+
           {/* Volume par groupe musculaire */}
           <MuscleVolumeBars period={period} />
+
+          {/* Heatmap calendrier */}
+          <TrainingHeatmap weeks={12} />
 
           {/* Charts */}
           <div className="charts-section">

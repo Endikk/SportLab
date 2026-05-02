@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { getLastLogForExercise } from "../utils/storage";
+import { getLastLogForExercise, isBodyweightExercise } from "../utils/storage";
 import { getGradient, getIconPath } from "../utils/exerciseVisuals";
 import ExerciseImage from "./ExerciseImage";
 
@@ -7,9 +7,11 @@ export default function ExerciseCard({ exercise, globalIndex, sectionTitle }) {
   const navigate = useNavigate();
   const lastLog = getLastLogForExercise(exercise.id);
   const lastWeight = lastLog?.sets?.[0]?.weight;
+  const lastReps = lastLog?.sets?.[0]?.reps;
   const lastDate = lastLog?.timestamp
     ? new Date(lastLog.timestamp).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })
     : null;
+  const lastDoneAtBodyweight = lastLog && !lastWeight && lastReps && isBodyweightExercise(exercise.name);
 
   const [c1, c2] = getGradient(sectionTitle);
   const iconD = getIconPath(exercise.name);
@@ -41,6 +43,11 @@ export default function ExerciseCard({ exercise, globalIndex, sectionTitle }) {
         {lastWeight && (
           <div className="exercise-last-weight">
             Dernier{lastDate ? ` (${lastDate})` : ""} : {lastWeight} kg
+          </div>
+        )}
+        {lastDoneAtBodyweight && (
+          <div className="exercise-last-weight">
+            Dernier{lastDate ? ` (${lastDate})` : ""} : PC × {lastReps}
           </div>
         )}
       </div>
