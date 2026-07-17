@@ -6,34 +6,34 @@
 
 /* ========== TOKENS ========== */
 :root {
-  /* Fonds — clairs et aérés, laissent le glass réfracter la couleur */
-  --bg: #EBEAF4;
-  --bg-secondary: #F4F3FB;
+  /* Fonds — bleu & blanc, propres */
+  --bg: #EAF1FB;
+  --bg-secondary: #F2F6FC;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #F6F5FC;
-  --bg-input: #F1F0F9;
+  --bg-card-hover: #F4F8FD;
+  --bg-input: #EEF3FA;
   --bg-elevated: #FFFFFF;
 
-  /* Accent — indigo/violet électrique */
-  --accent: #6C4CF1;
-  --accent-light: #8B6BF7;
-  --accent-dark: #5233D6;
-  --accent-glow: rgba(108, 76, 241, 0.22);
-  --accent-subtle: rgba(108, 76, 241, 0.09);
-  --accent-2: #EC4899;
-  --accent-grad: linear-gradient(135deg, #6C4CF1 0%, #9333EA 52%, #EC4899 100%);
-  --accent-grad-soft: linear-gradient(135deg, rgba(108,76,241,0.14), rgba(236,72,153,0.12));
+  /* Accent — bleu électrique / cobalt */
+  --accent: #2F6BFF;
+  --accent-light: #5E8FFF;
+  --accent-dark: #1B4FD6;
+  --accent-glow: rgba(47, 107, 255, 0.22);
+  --accent-subtle: rgba(47, 107, 255, 0.09);
+  --accent-2: #2F6BFF;
+  --accent-grad: linear-gradient(135deg, #2F6BFF 0%, #4F8BFF 100%);
+  --accent-grad-soft: linear-gradient(135deg, rgba(47, 107, 255, 0.12), rgba(79, 139, 255, 0.10));
 
-  /* Texte — jamais de noir pur */
-  --text-1: #1A1826;
-  --text-2: #625E74;
-  --text-3: #9B97AC;
-  --text-muted: #9B97AC;
+  /* Texte — bleu nuit, jamais de noir pur */
+  --text-1: #12203A;
+  --text-2: #56617A;
+  --text-3: #939DB4;
+  --text-muted: #939DB4;
   --on-accent: #FFFFFF;
 
-  /* Hairlines (héritage — utilisées avec parcimonie, jamais en bordure dure) */
-  --border: rgba(26, 24, 38, 0.05);
-  --border-light: rgba(26, 24, 38, 0.08);
+  /* Hairlines (héritage — quasi invisibles, jamais en bordure dure) */
+  --border: rgba(18, 32, 58, 0.05);
+  --border-light: rgba(18, 32, 58, 0.08);
 
   /* Sémantique */
   --green: #10B981;
@@ -42,27 +42,29 @@
   --amber: #F59E0B;
 
   /* Liquid glass */
-  --glass-bg: rgba(255, 255, 255, 0.52);
-  --glass-bg-strong: rgba(255, 255, 255, 0.70);
-  --glass-blur: blur(22px) saturate(190%);
-  --glass-blur-strong: blur(32px) saturate(200%);
+  --glass-bg: rgba(255, 255, 255, 0.50);
+  --glass-bg-strong: rgba(255, 255, 255, 0.68);
+  --glass-blur: blur(22px) saturate(180%);
+  --glass-blur-strong: blur(30px) saturate(190%);
   --glass-edge: 1px solid rgba(255, 255, 255, 0.55);
   --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.22);
-  --glass-shadow: 0 10px 34px rgba(43, 33, 92, 0.13);
+  --glass-shadow: 0 10px 30px rgba(23, 54, 120, 0.13);
+  /* Réfraction réelle (Chromium) — remplacée par du flou seul en fallback */
+  --glass-refract: blur(2px) url("#lg-distortion") saturate(180%) brightness(1.05);
 
   /* Rayons — fluides */
-  --radius-lg: 30px;
-  --radius: 22px;
-  --radius-sm: 15px;
+  --radius-lg: 28px;
+  --radius: 20px;
+  --radius-sm: 14px;
   --radius-xs: 11px;
   --radius-pill: 999px;
 
-  /* Ombres — douces, teintées froid */
-  --shadow-sm: 0 2px 10px rgba(43, 33, 92, 0.05);
-  --shadow: 0 8px 24px rgba(43, 33, 92, 0.08);
-  --shadow-md: 0 14px 38px rgba(43, 33, 92, 0.11);
-  --shadow-lg: 0 26px 64px rgba(43, 33, 92, 0.17);
-  --shadow-accent: 0 12px 30px rgba(108, 76, 241, 0.36);
+  /* Ombres — douces, teintées bleu */
+  --shadow-sm: 0 2px 10px rgba(23, 54, 120, 0.06);
+  --shadow: 0 8px 24px rgba(23, 54, 120, 0.09);
+  --shadow-md: 0 14px 36px rgba(23, 54, 120, 0.12);
+  --shadow-lg: 0 24px 60px rgba(23, 54, 120, 0.18);
+  --shadow-accent: 0 12px 28px rgba(47, 107, 255, 0.34);
 }
 
 /* ========== BASE ========== */
@@ -73,7 +75,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Ambient mesh fixe — donne de la couleur au verre, sans jank iOS */
+/* Fond bleu & blanc — un seul lavis discret, propre et efficace */
 body::before {
   content: "";
   position: fixed;
@@ -81,10 +83,8 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(90% 55% at 6% -8%, rgba(108, 76, 241, 0.24), transparent 62%),
-    radial-gradient(80% 48% at 102% 2%, rgba(236, 72, 153, 0.18), transparent 58%),
-    radial-gradient(96% 60% at 50% 110%, rgba(56, 189, 248, 0.16), transparent 60%),
-    var(--bg);
+    radial-gradient(120% 70% at 50% -10%, rgba(47, 107, 255, 0.16), transparent 60%),
+    linear-gradient(180deg, #F3F8FF 0%, var(--bg) 100%);
 }
 
 ::selection {
@@ -101,6 +101,24 @@ body::before {
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   box-shadow: var(--glass-highlight), var(--glass-shadow);
+}
+
+/* ===== VRAI LIQUID GLASS (réfraction) — Chromium ; fallback flou ailleurs =====
+   Sur navigateur compatible (html[data-lg="on"]), les surfaces glass déforment
+   réellement le fond via le filtre SVG #lg-distortion. Sinon, elles gardent le
+   flou CSS déjà défini plus bas (dégradation propre, notamment iOS Safari). */
+html[data-lg="on"] .glass,
+html[data-lg="on"] .bottom-nav,
+html[data-lg="on"] .exercise-nav-bar,
+html[data-lg="on"] .rest-timer,
+html[data-lg="on"] .today-tag,
+html[data-lg="on"] .card-visual-section,
+html[data-lg="on"] .card-visual-set,
+html[data-lg="on"] .card-visual-zoom,
+html[data-lg="on"] .swipe-indicator,
+html[data-lg="on"] .back-btn,
+html[data-lg="on"] .settings-btn {
+  backdrop-filter: var(--glass-refract);
 }
 
 /* Boutons : reset visuel hérité */

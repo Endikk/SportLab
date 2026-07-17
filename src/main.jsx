@@ -4,6 +4,18 @@ import App from "./App";
 import "./index.css";
 import "./styles/redesign.css";
 
+// Détection du "vrai" liquid glass (réfraction SVG via backdrop-filter: url()).
+// Chromium le supporte → réfraction réelle ; iOS Safari / Firefox → fallback flou.
+try {
+  const supportsRefraction =
+    typeof CSS !== "undefined" &&
+    CSS.supports &&
+    CSS.supports("backdrop-filter", 'url("#lg-distortion")');
+  document.documentElement.dataset.lg = supportsRefraction ? "on" : "off";
+} catch {
+  document.documentElement.dataset.lg = "off";
+}
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <App />

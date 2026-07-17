@@ -8,10 +8,12 @@ import Records from "./pages/Records";
 import ProgramInfo from "./pages/ProgramInfo";
 import Quick from "./pages/Quick";
 import Navigation from "./components/Navigation";
+import GlassFilter from "./components/GlassFilter";
 
 export default function App() {
   return (
     <HashRouter>
+      <GlassFilter />
       <div className="app">
         <Routes>
           <Route path="/" element={<Home />} />
