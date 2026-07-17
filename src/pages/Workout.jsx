@@ -1,6 +1,22 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
+  ArrowLeft,
+  X,
+  Clock,
+  Check,
+  Star,
+  Plus,
+  MagnifyingGlassPlus,
+  CaretLeft,
+  CaretRight,
+  ArrowBendDownRight,
+  TrendUp,
+  NotePencil,
+  FloppyDisk,
+  Trash,
+} from "@phosphor-icons/react";
+import {
   getLastLogForExercise,
   saveSessionLog,
   parseMaxReps,
@@ -326,9 +342,7 @@ export default function Workout() {
       <div className="page">
         <header className="page-header">
           <button className="back-btn" onClick={() => navigate("/")} aria-label="Retour">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
+            <ArrowLeft size={22} weight="bold" aria-hidden="true" />
           </button>
           <h1 className="page-title">Séance introuvable</h1>
         </header>
@@ -455,9 +469,7 @@ export default function Workout() {
       <div className="page workout-complete">
         <div className="complete-content">
           <div className="complete-check">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 6L9 17l-5-5" />
-            </svg>
+            <Check size={60} weight="bold" aria-hidden="true" />
           </div>
           <h2>Bien joué !</h2>
           <p className="complete-stats">{completedSets}/{totalSets} séries validées</p>
@@ -473,9 +485,7 @@ export default function Workout() {
       <div className="page workout-page">
         <header className="workout-header">
           <button className="back-btn" onClick={() => setAllDone(false)} aria-label="Retour">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
+            <ArrowLeft size={22} weight="bold" aria-hidden="true" />
           </button>
           <div className="workout-header-info">
             <h1 className="workout-title">{session.name.replace(/Séance \d+ — /, "")}</h1>
@@ -486,9 +496,7 @@ export default function Workout() {
         </div>
         <div className="finish-card">
           <div className="finish-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z" />
-            </svg>
+            <Star size={44} weight="fill" aria-hidden="true" />
           </div>
           <h2 className="finish-title">Séance terminée</h2>
           <p className="finish-stats">
@@ -529,9 +537,7 @@ export default function Workout() {
           <div className="finish-block">
             <label className="finish-label">Tu as fait autre chose ?</label>
             <button className="extra-add-btn" onClick={() => setShowCatalog(true)}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                <path d="M12 5v14M5 12h14" />
-              </svg>
+              <Plus size={16} weight="bold" aria-hidden="true" />
               <span>Ajouter un exo en plus</span>
             </button>
             {extraExercises.length > 0 && (
@@ -619,18 +625,13 @@ export default function Workout() {
       {/* Header */}
       <header className="workout-header">
         <button className="back-btn" onClick={handleCancelRequest} aria-label="Quitter">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
+          <X size={22} weight="bold" aria-hidden="true" />
         </button>
         <div className="workout-header-info">
           <h1 className="workout-title">{session.name.replace(/Séance \d+ — /, "")}</h1>
           <div className="workout-meta">
             <span className="workout-chrono" aria-label="Durée de la séance">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 15 14" />
-              </svg>
+              <Clock size={13} weight="fill" aria-hidden="true" />
               {fmtDuration(nowTick - startedAt)}
             </span>
             <span className="workout-counter">{completedSets}/{totalSets}</span>
@@ -675,13 +676,13 @@ export default function Workout() {
           {/* Swipe indicators */}
           {isSwipingRight && (
             <div className="swipe-indicator swipe-right" style={{ opacity: swipeProgress }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M9 18l6-6-6-6" /></svg>
+              <CaretRight size={20} weight="bold" aria-hidden="true" />
               <span>SUIVANT</span>
             </div>
           )}
           {isSwipingLeft && exerciseIdx > 0 && (
             <div className="swipe-indicator swipe-left" style={{ opacity: swipeProgress }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M15 18l-6-6 6-6" /></svg>
+              <CaretLeft size={20} weight="bold" aria-hidden="true" />
               <span>PRÉCÉDENT</span>
             </div>
           )}
@@ -689,11 +690,11 @@ export default function Workout() {
           {/* Gradient header — tap to fullscreen */}
           <div
             className="card-visual"
-            style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}
+            style={{ "--muscle": c1, "--muscle-2": c2 }}
             onClick={() => currentExercise.image && setShowImage(true)}
           >
             <ExerciseImage name={currentExercise.image} alt={currentExercise.name} className="card-visual-img" />
-            <svg viewBox="0 0 24 24" className="card-visual-icon" fill="white" opacity="0.2">
+            <svg viewBox="0 0 24 24" className="card-visual-icon" fill="currentColor" aria-hidden="true">
               <path d={iconD} />
             </svg>
             <div className="card-visual-overlay">
@@ -701,10 +702,8 @@ export default function Workout() {
               <span className="card-visual-set">{exerciseIdx + 1}/{orderedExercises.length}</span>
             </div>
             {currentExercise.image && (
-              <div className="card-visual-zoom">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35M11 8v6M8 11h6" />
-                </svg>
+              <div className="card-visual-zoom" aria-hidden="true">
+                <MagnifyingGlassPlus size={18} weight="bold" />
               </div>
             )}
           </div>
@@ -719,9 +718,7 @@ export default function Workout() {
           {/* Suggestion de charge */}
           {suggestions[currentExercise.id]?.progress && (
             <div className="suggestion-hint">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                <path d="M3 17l6-6 4 4 8-8" /><path d="M14 7h7v7" />
-              </svg>
+              <TrendUp size={16} weight="bold" aria-hidden="true" />
               <span>
                 +{suggestions[currentExercise.id].increment} kg suggéré
                 {" "}<small>(dernière fois : {suggestions[currentExercise.id].baseWeight} kg)</small>
@@ -761,9 +758,7 @@ export default function Workout() {
                       onClick={() => toggleDone(currentExercise.id, i, currentExercise.rest)}
                       aria-label="Décocher"
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden="true">
-                        <path d="M20 6L9 17l-5-5" />
-                      </svg>
+                      <Check size={19} weight="bold" aria-hidden="true" />
                     </button>
                     {!set.rpe && (
                       <div className="card-set-rpe-row">
@@ -780,9 +775,7 @@ export default function Workout() {
                               </button>
                             ))}
                             <button className="rpe-picker-close" onClick={() => setOpenRpeFor(null)} aria-label="Fermer">
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                                <path d="M18 6L6 18M6 6l12 12" />
-                              </svg>
+                              <X size={14} weight="bold" aria-hidden="true" />
                             </button>
                           </div>
                         ) : (
@@ -879,10 +872,7 @@ export default function Workout() {
               return (
                 <button className="card-personal-note" onClick={startEditing}>
                   <span className="card-personal-note-label">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                    </svg>
+                    <NotePencil size={13} weight="bold" aria-hidden="true" />
                     Note perso
                   </span>
                   <span className="card-personal-note-text">{personalNote}</span>
@@ -891,9 +881,7 @@ export default function Workout() {
             }
             return (
               <button className="card-add-note" onClick={startEditing}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
+                <NotePencil size={14} weight="bold" aria-hidden="true" />
                 Ajouter une note perso
               </button>
             );
@@ -908,12 +896,12 @@ export default function Workout() {
 
       {/* Navigation */}
       <div className="exercise-nav-bar">
-        <button className="nav-btn-prev" onClick={goPrev} disabled={exerciseIdx === 0}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" /></svg>
+        <button className="nav-btn-prev" onClick={goPrev} disabled={exerciseIdx === 0} aria-label="Exercice précédent">
+          <CaretLeft size={22} weight="bold" aria-hidden="true" />
         </button>
         {!isLast && (
           <button className="nav-btn-skip" onClick={handleSkip} title="Reporter après le suivant">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
+            <ArrowBendDownRight size={16} weight="bold" aria-hidden="true" />
             <span>Reporter</span>
           </button>
         )}
@@ -923,8 +911,8 @@ export default function Workout() {
             Terminer
           </button>
         ) : (
-          <button className="nav-btn-next" onClick={goNext}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
+          <button className="nav-btn-next" onClick={goNext} aria-label="Exercice suivant">
+            <CaretRight size={22} weight="bold" aria-hidden="true" />
           </button>
         )}
       </div>
@@ -941,7 +929,7 @@ export default function Workout() {
       {/* Skip toast */}
       {skipToast && (
         <div className="skip-toast">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
+          <ArrowBendDownRight size={16} weight="bold" aria-hidden="true" />
           {skipToast} reporté
         </div>
       )}
@@ -974,18 +962,11 @@ export default function Workout() {
             </p>
             <div className="cancel-modal-actions">
               <button className="cancel-modal-btn save" onClick={handleCancelSave}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
-                  <polyline points="17 21 17 13 7 13 7 21" />
-                  <polyline points="7 3 7 8 15 8" />
-                </svg>
+                <FloppyDisk size={18} weight="bold" aria-hidden="true" />
                 Quitter et reprendre plus tard
               </button>
               <button className="cancel-modal-btn discard" onClick={handleCancelDiscard}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                </svg>
+                <Trash size={18} weight="bold" aria-hidden="true" />
                 Abandonner la séance
               </button>
               <button className="cancel-modal-btn continue" onClick={() => setShowCancelModal(false)}>

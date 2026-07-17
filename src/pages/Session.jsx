@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft, Lightbulb } from "@phosphor-icons/react";
 import { findSessionById } from "../utils/storage";
 import ExerciseCard from "../components/ExerciseCard";
 
@@ -12,9 +13,7 @@ export default function Session() {
       <div className="page">
         <header className="page-header">
           <button className="back-btn" onClick={() => navigate("/")} aria-label="Retour">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
+            <ArrowLeft size={22} weight="bold" aria-hidden="true" />
           </button>
           <h1 className="page-title">Séance introuvable</h1>
         </header>
@@ -33,9 +32,7 @@ export default function Session() {
     <div className="page session-page">
       <header className="page-header">
         <button className="back-btn" onClick={() => navigate("/")} aria-label="Retour">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
+          <ArrowLeft size={22} weight="bold" aria-hidden="true" />
         </button>
         <div>
           <h1 className="page-title">{session.name}</h1>
@@ -56,7 +53,7 @@ export default function Session() {
 
       {session.warmup && (
         <div className="tip-banner">
-          <span className="tip-icon" aria-hidden="true">💡</span>
+          <span className="tip-icon" aria-hidden="true"><Lightbulb size={18} weight="fill" /></span>
           <p>{session.warmup}</p>
         </div>
       )}

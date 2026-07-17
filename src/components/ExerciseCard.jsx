@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { CaretRight } from "@phosphor-icons/react";
 import { getLastLogForExercise, isBodyweightExercise } from "../utils/storage";
 import { getGradient, getIconPath } from "../utils/exerciseVisuals";
 import ExerciseImage from "./ExerciseImage";
@@ -52,9 +53,7 @@ export default function ExerciseCard({ exercise, globalIndex, sectionTitle }) {
         )}
       </div>
       <div className="exercise-arrow" aria-hidden="true">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M9 18l6-6-6-6" />
-        </svg>
+        <CaretRight size={17} weight="bold" />
       </div>
     </div>
   );

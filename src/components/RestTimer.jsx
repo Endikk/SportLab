@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { X, Play, Pause } from "@phosphor-icons/react";
 
 function fmt(sec) {
   const m = Math.floor(sec / 60);
@@ -37,9 +38,7 @@ export default function RestTimer({ initialSec, onClose }) {
   return (
     <div className={`rest-timer ${isLow ? "low" : ""} ${isDone ? "done" : ""}`}>
       <button className="rest-timer-close" onClick={onClose} aria-label="Fermer le timer">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-          <path d="M18 6L6 18M6 6l12 12" />
-        </svg>
+        <X size={16} weight="bold" aria-hidden="true" />
       </button>
 
       <div className="rest-timer-info">
@@ -55,13 +54,9 @@ export default function RestTimer({ initialSec, onClose }) {
           aria-label={paused ? "Reprendre" : "Pause"}
         >
           {paused ? (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M8 5v14l11-7z" />
-            </svg>
+            <Play size={16} weight="fill" aria-hidden="true" />
           ) : (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M6 5h4v14H6zm8 0h4v14h-4z" />
-            </svg>
+            <Pause size={16} weight="fill" aria-hidden="true" />
           )}
         </button>
         <button className="rest-timer-btn" onClick={() => adjust(15)} aria-label="+15s">+15</button>
