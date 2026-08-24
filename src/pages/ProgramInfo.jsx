@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { programHypertrophieInfo } from "../data/program-hypertrophie";
+import { programUlfInfo } from "../data/program-ulf";
 
 const PROGRAM_INFOS = {
+  ulf: programUlfInfo,
   hypertrophie: programHypertrophieInfo,
 };
 
@@ -50,6 +52,9 @@ export default function ProgramInfo() {
       </div>
     );
   }
+
+  const focusTitle = info.focusTitle || "Rotation abdos";
+  const focusRows = info.focus || info.abdosRotation || [];
 
   return (
     <div className="page program-info-page">
@@ -108,9 +113,9 @@ export default function ProgramInfo() {
             </div>
           ))}
         </div>
-        <h4 className="info-subtitle">Rotation abdos</h4>
+        <h4 className="info-subtitle">{focusTitle}</h4>
         <ul className="info-mini-list">
-          {info.abdosRotation.map((r) => (
+          {focusRows.map((r) => (
             <li key={r.day}><strong>{r.day} :</strong> {r.exercises}</li>
           ))}
         </ul>
@@ -140,7 +145,10 @@ export default function ProgramInfo() {
             </tbody>
           </table>
         </div>
-        <p className="info-caption">⭐ = muscle prioritaire · MEV = volume minimum, MAV = volume optimal (RP 2024)</p>
+        <p className="info-caption">
+          {info.volumeCaption ||
+            "⭐ = muscle prioritaire · MEV = volume minimum, MAV = volume optimal (RP 2024)"}
+        </p>
       </Section>
 
       {/* Progression */}
@@ -154,7 +162,7 @@ export default function ProgramInfo() {
         </p>
         <p className="info-paragraph"><em>{info.progression.example}</em></p>
 
-        <h4 className="info-subtitle">Plan 6 semaines</h4>
+        <h4 className="info-subtitle">{info.progression.planTitle || "Plan 6 semaines"}</h4>
         <div className="info-table-wrap">
           <table className="info-table">
             <thead>
@@ -202,7 +210,7 @@ export default function ProgramInfo() {
           </div>
         </div>
 
-        <h4 className="info-subtitle">Macros à 3 300 kcal</h4>
+        <h4 className="info-subtitle">{info.nutrition.macrosTitle || "Macros à 3 300 kcal"}</h4>
         <div className="info-table-wrap">
           <table className="info-table">
             <thead>
@@ -240,7 +248,7 @@ export default function ProgramInfo() {
           ))}
         </div>
 
-        <h4 className="info-subtitle">Conseils ectomorphe</h4>
+        <h4 className="info-subtitle">{info.nutrition.tipsTitle || "Conseils ectomorphe"}</h4>
         <ul className="info-mini-list">
           {info.nutrition.tips.map((t, i) => <li key={i}>{t}</li>)}
         </ul>

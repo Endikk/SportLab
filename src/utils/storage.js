@@ -1,10 +1,12 @@
 import { program } from "../data/program";
 import { programHypertrophie } from "../data/program-hypertrophie";
+import { programUlf } from "../data/program-ulf";
 
 export const PROGRAMS = [
-  // PPL conservé pour la rétro-compatibilité des logs anciens (caché de l'UI principale).
+  { id: "ulf", name: programUlf.name, sessions: programUlf.sessions, schedule: programUlf.schedule },
+  // Programmes archivés : conservés pour la rétro-compatibilité des logs anciens (cachés de l'UI).
   { id: "ppl", name: "Push / Pull / Legs", sessions: program.sessions, schedule: program.schedule, hidden: true },
-  { id: "hypertrophie", name: programHypertrophie.name, sessions: programHypertrophie.sessions, schedule: programHypertrophie.schedule },
+  { id: "hypertrophie", name: programHypertrophie.name, sessions: programHypertrophie.sessions, schedule: programHypertrophie.schedule, hidden: true },
 ];
 
 export const VISIBLE_PROGRAMS = PROGRAMS.filter((p) => !p.hidden);
@@ -344,6 +346,7 @@ const MUSCLE_KEYWORDS = [
   { key: "Lombaires", match: ["lombaire", "lomb"] },
   { key: "Quadriceps", match: ["quadriceps", "quad"] },
   { key: "Ischios", match: ["ischio"] },
+  { key: "Fessiers", match: ["fessier", "glute"] },
   { key: "Mollets", match: ["mollet"] },
   { key: "Abdos", match: ["abdo", "gainage"] },
   { key: "Cardio", match: ["cardio"] },
@@ -914,29 +917,11 @@ export function compareWithPreviousSession(sessionId, currentLogs) {
   return { previousDate: previous.date, rows };
 }
 
-// ─── Variant A/B automatique selon semaine ISO ───
-// Semaine ISO impaire = A · paire = B
-export function getISOWeek(date = new Date()) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-}
-
-export function getCurrentWeekVariant() {
-  return getISOWeek() % 2 === 0 ? "b" : "a";
-}
-
-// Retourne le schedule du programme actif avec les bonnes sessions A/B
+// Retourne le planning hebdomadaire du programme actif
 export function getActiveSchedule(programId = ACTIVE_PROGRAM.id) {
   const prog = PROGRAMS.find((p) => p.id === programId);
   if (!prog) return [];
-  const variant = getCurrentWeekVariant();
-  return prog.schedule.map((item) => ({
-    ...item,
-    session: item.session ? item.session.replace(/-a$/, `-${variant}`).replace(/-b$/, `-${variant}`) : null,
-  }));
+  return prog.schedule.map((item) => ({ ...item }));
 }
 
 // ─── Séance libre (freestyle) — sélection ad-hoc d'exos ───

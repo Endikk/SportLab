@@ -11,7 +11,6 @@ import {
   VISIBLE_PROGRAMS,
   ACTIVE_PROGRAM,
   getActiveSchedule,
-  getCurrentWeekVariant,
 } from "../utils/storage";
 import { getSessionVisual } from "../utils/exerciseVisuals";
 
@@ -21,7 +20,6 @@ export default function Home() {
   const todayCapitalized = today.charAt(0).toUpperCase() + today.slice(1);
   const activeSchedule = getActiveSchedule(ACTIVE_PROGRAM.id);
   const todaySchedule = activeSchedule.find((s) => s.day === todayCapitalized);
-  const variant = getCurrentWeekVariant();
 
   const inProgress = getWorkoutInProgress();
   const recentSessions = getRecentSessions();
@@ -177,7 +175,7 @@ export default function Home() {
               <path d={todayVisual.icon} />
             </svg>
             <div className="today-hero-overlay">
-              <span className="today-tag">Aujourd'hui · Sem {variant.toUpperCase()}</span>
+              <span className="today-tag">Aujourd'hui</span>
               <h2 className="today-hero-title">{todayVisual.emoji}</h2>
             </div>
           </div>

@@ -91,7 +91,12 @@ const sessionVisuals = {
   legs:  { emoji: "LEGS",  gradient: ["#059669", "#34D399"], icon: iconPaths.machine },
   bonus: { emoji: "BONUS", gradient: ["#D97706", "#FBBF24"], icon: iconPaths.dumbbell },
 
-  // Programme Hypertrophie 2 sem.
+  // Programme Upper / Lower / Full Body (actif)
+  "ulf-upper": { emoji: "UPPER", gradient: ["#E8450E", "#FF8C42"], icon: iconPaths.barbell },
+  "ulf-lower": { emoji: "LOWER", gradient: ["#059669", "#34D399"], icon: iconPaths.machine },
+  "ulf-full":  { emoji: "FULL",  gradient: ["#2563EB", "#60A5FA"], icon: iconPaths.dumbbell },
+
+  // Programmes archivés — conservés pour l'affichage des anciens logs.
   "hyper-haut-a":  { emoji: "HAUT A", gradient: ["#E8450E", "#FF8C42"], icon: iconPaths.barbell },
   "hyper-full-a":  { emoji: "FULL A", gradient: ["#2563EB", "#60A5FA"], icon: iconPaths.dumbbell },
   "hyper-bas-a":   { emoji: "BAS A",  gradient: ["#059669", "#34D399"], icon: iconPaths.machine },
