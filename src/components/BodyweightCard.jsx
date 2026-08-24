@@ -96,7 +96,7 @@ export default function BodyweightCard() {
               </span>
             )}
           </div>
-          <Sparkline data={history} color="#34D399" />
+          <Sparkline data={history} color="#2C4A7C" />
           <span className="bw-date">
             Dernière mesure : {new Date(latest.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
           </span>

@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   getExerciseHistory,
@@ -15,6 +16,7 @@ const TREND_LABEL = {
 };
 
 function MiniChart({ data, color, label, unit, formatVal }) {
+  const gradId = useId();
   if (data.length === 0) return null;
 
   const values = data.map((d) => d.value);
@@ -57,12 +59,12 @@ function MiniChart({ data, color, label, unit, formatVal }) {
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="chart-svg" preserveAspectRatio="none">
         <defs>
-          <linearGradient id={`grad-${label}`} x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={color} stopOpacity="0.25" />
             <stop offset="100%" stopColor={color} stopOpacity="0" />
           </linearGradient>
         </defs>
-        <path d={areaPath} fill={`url(#grad-${label})`} />
+        <path d={areaPath} fill={`url(#${gradId})`} />
         <path d={linePath} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         {points.map((p, i) => (
           <circle key={i} cx={p.x} cy={p.y} r={i === points.length - 1 ? 4 : 2.5} fill={color} />
@@ -207,7 +209,7 @@ export default function History() {
         <div className="charts-section">
           <MiniChart
             data={weightData}
-            color="#FF6B2C"
+            color="#2F5D3F"
             label="Poids max"
             unit=" kg"
             formatVal={(v) => Math.round(v * 10) / 10}
@@ -215,7 +217,7 @@ export default function History() {
           {oneRMData.length >= 2 && (
             <MiniChart
               data={oneRMData}
-              color="#FBBF24"
+              color="#A9713A"
               label="1RM estimé"
               unit=" kg"
               formatVal={(v) => Math.round(v * 10) / 10}
@@ -223,7 +225,7 @@ export default function History() {
           )}
           <MiniChart
             data={volumeData}
-            color="#34D399"
+            color="#2C4A7C"
             label="Volume total"
             unit=" kg"
             formatVal={(v) => Math.round(v)}

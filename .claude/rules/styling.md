@@ -8,9 +8,11 @@ paths:
 
 ## Thème
 - Utiliser UNIQUEMENT les CSS variables existantes dans `:root`
-- Couleurs principales : `--accent` (orange), `--bg` (noir), `--text-1` (blanc)
+- Couleurs principales : `--accent` (vert forêt #2F5D3F), `--bg` (crème #FBF9F4), `--text-1` (vert sombre #1B2E22)
 - Ne jamais hardcoder de couleurs — toujours `var(--nom-variable)`
-- Thème OLED-friendly : pas de blanc pur, pas de gris clair
+- Thème clair inspiré de Center Parcs : fonds crème/blanc, accents vert forêt et vert feuille, caramel en secondaire
+- Palette par groupe musculaire : `muscleColors` dans `utils/exerciseVisuals.js` — source unique, ne pas la redupliquer
+- Texte blanc uniquement sur un fond coloré (dégradé, voile) — jamais sur crème ou blanc
 
 ## Layout
 - Mobile-first : max-width 480px

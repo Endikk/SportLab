@@ -945,7 +945,7 @@ export function createFreestyleSession(exerciseIds) {
     duration: "",
     type: "custom",
     emoji: "LIBRE",
-    gradient: ["#9333EA", "#A855F7"],
+    gradient: ["#B4527A", "#E4739B"],
     freestyle: true,
     sections: [
       {

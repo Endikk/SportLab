@@ -252,14 +252,14 @@ export default function Logs() {
           <div className="charts-section">
             <BarChart
               data={volumeData}
-              color="#FF6B2C"
+              color="#2F5D3F"
               label="Volume par séance"
               unit=" kg"
               formatVal={(v) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : Math.round(v)}
             />
             <BarChart
               data={weekData}
-              color="#34D399"
+              color="#4E9E4A"
               label="Séances / semaine"
               unit=""
               formatVal={(v) => Math.round(v)}

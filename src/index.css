@@ -1,41 +1,46 @@
 /* ========== VARIABLES ========== */
 :root {
-  /* Background — NOT pure black, charcoal for OLED friendliness */
-  --bg: #121216;
-  --bg-secondary: #18181C;
-  --bg-card: #1E1E23;
-  --bg-card-hover: #26262C;
-  --bg-input: #2A2A30;
-  --bg-elevated: #222228;
+  color-scheme: light;
 
-  /* Accent — used sparingly: CTA + active states only */
-  --accent: #FF6B2C;
-  --accent-light: #FF8F52;
-  --accent-dark: #D4500E;
-  --accent-glow: rgba(255, 107, 44, 0.15);
-  --accent-subtle: rgba(255, 107, 44, 0.06);
+  /* Fonds — crème naturelle, dans l'esprit du site Center Parcs */
+  --bg: #FBF9F4;
+  --bg-secondary: #F4F1E8;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F6F3EB;
+  --bg-input: #F1EEE4;
+  --bg-elevated: #FFFFFF;
 
-  /* Text */
-  --text-1: #ECECED;
-  --text-2: #A1A1AA;
-  --text-3: #5A5A65;
+  /* Accent — vert forêt Center Parcs, vert feuille en secondaire */
+  --accent: #2F5D3F;
+  --accent-light: #6BBF59;
+  --accent-dark: #1F4029;
+  --accent-glow: rgba(47, 93, 63, 0.14);
+  --accent-subtle: rgba(47, 93, 63, 0.06);
 
-  /* Borders */
-  --border: rgba(255, 255, 255, 0.06);
-  --border-light: rgba(255, 255, 255, 0.10);
+  /* Texte */
+  --text-1: #1B2E22;
+  --text-2: #5A6B5F;
+  --text-3: #8B978F;
 
-  /* Semantic */
-  --green: #34D399;
-  --green-dark: #059669;
-  --red: #F87171;
+  /* Bordures — sombres sur fond clair */
+  --border: rgba(27, 46, 34, 0.10);
+  --border-light: rgba(27, 46, 34, 0.18);
+
+  /* Sémantique */
+  --green: #4E9E4A;
+  --green-dark: #2F5D3F;
+  --red: #C0492F;
+  --caramel: #C98B3E;
+  --caramel-dark: #A9713A;
 
   /* Radius — pro = sharp, not bubbly */
   --radius: 14px;
   --radius-sm: 10px;
   --radius-xs: 6px;
 
-  /* Shadows */
-  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  /* Ombres — douces, jamais noires pures */
+  --shadow: 0 1px 3px rgba(27, 46, 34, 0.08);
+  --shadow-md: 0 4px 14px rgba(27, 46, 34, 0.10);
 
   /* Animation */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -55,7 +60,7 @@ html {
 }
 
 body {
-  font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: var(--bg);
   color: var(--text-1);
   min-height: 100dvh;
@@ -356,7 +361,7 @@ body {
 
 .hero-start-btn:active {
   transform: scale(0.96);
-  box-shadow: 0 0 20px rgba(255, 107, 44, 0.35);
+  box-shadow: 0 0 20px rgba(47, 93, 63, 0.35);
 }
 
 .hero-detail-btn {
@@ -688,7 +693,7 @@ body {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: rgba(26, 26, 31, 0.8);
+  background: rgba(251, 249, 244, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
@@ -983,8 +988,14 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+  gap: 2px;
+  /* Voile sombre : les GIF ont un fond blanc, le texte blanc doit rester lisible */
+  padding: 5px 16px;
+  border-radius: 999px;
+  background: rgba(27, 46, 34, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
 .card-visual-zoom {
@@ -1004,7 +1015,7 @@ body {
 .card-visual-section {
   font-size: 10px;
   font-weight: 700;
-  color: rgba(255,255,255,0.7);
+  color: rgba(255,255,255,0.9);
   text-transform: uppercase;
   letter-spacing: 0.12em;
 }
@@ -1452,7 +1463,7 @@ body {
 }
 
 .cancel-modal-btn.discard {
-  background: rgba(248, 113, 113, 0.15);
+  background: rgba(192, 73, 47, 0.15);
   color: var(--red);
 }
 
@@ -1726,7 +1737,7 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(18, 18, 22, 0.85);
+  background: rgba(251, 249, 244, 0.88);
   border-top: 1px solid var(--border);
   padding: 8px 0;
   padding-bottom: max(8px, env(safe-area-inset-bottom));
@@ -2034,7 +2045,7 @@ input[type="number"] {
 }
 
 .custom-session-action.danger:active {
-  background: rgba(248, 113, 113, 0.5);
+  background: rgba(192, 73, 47, 0.5);
 }
 
 /* ========== BUILDER PAGE ========== */
@@ -2245,7 +2256,7 @@ input[type="number"] {
 }
 
 .builder-icon-btn.danger:active {
-  background: rgba(248, 113, 113, 0.15);
+  background: rgba(192, 73, 47, 0.15);
 }
 
 .builder-add-btn {
@@ -2294,7 +2305,7 @@ input[type="number"] {
 }
 
 .builder-error {
-  background: rgba(248, 113, 113, 0.12);
+  background: rgba(192, 73, 47, 0.12);
   border: 1px solid var(--red);
   color: var(--red);
   padding: 10px 14px;
@@ -2316,7 +2327,7 @@ input[type="number"] {
   margin: 0 auto;
   padding: 12px 16px;
   padding-bottom: max(12px, env(safe-area-inset-bottom));
-  background: rgba(18, 18, 22, 0.92);
+  background: rgba(251, 249, 244, 0.94);
   border-top: 1px solid var(--border);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -2584,8 +2595,8 @@ input[type="number"] {
 
 /* ========== RECORDS RÉCENTS (Stats) ========== */
 .prs-card {
-  background: linear-gradient(135deg, rgba(217, 119, 6, 0.08), rgba(251, 191, 36, 0.04));
-  border: 1px solid rgba(251, 191, 36, 0.25);
+  background: linear-gradient(135deg, rgba(169, 113, 58, 0.08), rgba(169, 113, 58, 0.04));
+  border: 1px solid rgba(169, 113, 58, 0.25);
   border-radius: var(--radius);
   padding: 14px 16px;
   margin-bottom: 14px;
@@ -2656,7 +2667,7 @@ input[type="number"] {
 .pr-row-weight {
   font-size: 14px;
   font-weight: 800;
-  color: #FBBF24;
+  color: var(--caramel);
   font-variant-numeric: tabular-nums;
 }
 
@@ -3007,7 +3018,7 @@ input[type="number"] {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: linear-gradient(135deg, #D97706, #FBBF24);
+  background: linear-gradient(135deg, var(--caramel-dark), var(--caramel));
   border-radius: var(--radius);
   padding: 12px 16px;
   margin-bottom: 16px;
@@ -3076,13 +3087,13 @@ input[type="number"] {
 }
 
 .trend-banner.trend-up {
-  background: rgba(52, 211, 153, 0.08);
-  border-color: rgba(52, 211, 153, 0.3);
+  background: rgba(78, 158, 74, 0.08);
+  border-color: rgba(78, 158, 74, 0.3);
 }
 
 .trend-banner.trend-down {
-  background: rgba(248, 113, 113, 0.08);
-  border-color: rgba(248, 113, 113, 0.3);
+  background: rgba(192, 73, 47, 0.08);
+  border-color: rgba(192, 73, 47, 0.3);
 }
 
 .trend-icon {
@@ -3098,12 +3109,12 @@ input[type="number"] {
 }
 
 .trend-up .trend-icon {
-  background: rgba(52, 211, 153, 0.15);
+  background: rgba(78, 158, 74, 0.15);
   color: var(--green);
 }
 
 .trend-down .trend-icon {
-  background: rgba(248, 113, 113, 0.15);
+  background: rgba(192, 73, 47, 0.15);
   color: var(--red);
 }
 
@@ -3222,7 +3233,7 @@ input[type="number"] {
 
 @keyframes timerPulse {
   0%, 100% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4); }
-  50% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 14px rgba(255, 107, 44, 0.6); }
+  50% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 14px rgba(47, 93, 63, 0.6); }
 }
 
 .rest-timer.done {
@@ -3646,7 +3657,7 @@ input[type="number"] {
   position: sticky;
   top: 0;
   z-index: 80;
-  background: rgba(18, 18, 22, 0.85);
+  background: rgba(251, 249, 244, 0.88);
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   margin: 0 -16px;
@@ -3765,10 +3776,10 @@ input[type="number"] {
   color: var(--text-2);
 }
 
-.insight-up .insight-icon { background: rgba(52, 211, 153, 0.15); color: var(--green); }
-.insight-down .insight-icon { background: rgba(248, 113, 113, 0.15); color: var(--red); }
-.insight-pr .insight-icon { background: rgba(251, 191, 36, 0.15); color: #FBBF24; }
-.insight-warn .insight-icon { background: rgba(255, 107, 44, 0.15); color: var(--accent); }
+.insight-up .insight-icon { background: rgba(78, 158, 74, 0.15); color: var(--green); }
+.insight-down .insight-icon { background: rgba(192, 73, 47, 0.15); color: var(--red); }
+.insight-pr .insight-icon { background: rgba(169, 113, 58, 0.15); color: var(--caramel); }
+.insight-warn .insight-icon { background: rgba(47, 93, 63, 0.15); color: var(--accent); }
 
 .insight-text {
   font-size: 13px;
@@ -4071,7 +4082,7 @@ input[type="number"] {
 }
 
 .session-tile-action.danger:active {
-  background: rgba(248, 113, 113, 0.55);
+  background: rgba(192, 73, 47, 0.55);
 }
 
 .session-tile-body {
@@ -4181,8 +4192,8 @@ input[type="number"] {
   gap: 6px;
   margin-bottom: 10px;
   padding: 6px 10px;
-  background: rgba(52, 211, 153, 0.10);
-  border: 1px solid rgba(52, 211, 153, 0.3);
+  background: rgba(78, 158, 74, 0.10);
+  border: 1px solid rgba(78, 158, 74, 0.3);
   border-radius: var(--radius-xs);
   color: var(--green);
   font-size: 11px;
@@ -4224,9 +4235,9 @@ input[type="number"] {
   border: 1px solid var(--border);
 }
 
-.compare-row.compare-up { border-color: rgba(52, 211, 153, 0.3); }
-.compare-row.compare-down { border-color: rgba(248, 113, 113, 0.3); }
-.compare-row.compare-new { border-color: rgba(255, 107, 44, 0.3); }
+.compare-row.compare-up { border-color: rgba(78, 158, 74, 0.3); }
+.compare-row.compare-down { border-color: rgba(192, 73, 47, 0.3); }
+.compare-row.compare-new { border-color: rgba(47, 93, 63, 0.3); }
 
 .compare-name {
   font-size: 13px;
@@ -4261,7 +4272,7 @@ input[type="number"] {
 .card-set-row.done.compact {
   grid-template-columns: 28px 1fr 38px;
   padding: 4px 0;
-  background: rgba(52, 211, 153, 0.05);
+  background: rgba(78, 158, 74, 0.05);
   border-radius: var(--radius-xs);
   opacity: 1;
   transition: background 200ms ease;
@@ -4324,7 +4335,7 @@ input[type="number"] {
   margin-top: 10px;
   padding: 8px 12px;
   background: var(--accent-subtle);
-  border: 1px solid rgba(255, 107, 44, 0.25);
+  border: 1px solid rgba(47, 93, 63, 0.25);
   border-radius: var(--radius-sm);
   cursor: pointer;
   text-align: left;
@@ -4334,7 +4345,7 @@ input[type="number"] {
 }
 
 .card-personal-note:active {
-  background: rgba(255, 107, 44, 0.12);
+  background: rgba(47, 93, 63, 0.12);
 }
 
 .card-personal-note-label {
@@ -4445,7 +4456,7 @@ input[type="number"] {
   width: 100%;
   padding: 12px 14px;
   margin-bottom: 18px;
-  background: linear-gradient(135deg, #7C3AED, #A855F7);
+  background: linear-gradient(135deg, #8E4767, #C4738F);
   border: none;
   border-radius: var(--radius);
   color: white;
@@ -4562,7 +4573,7 @@ input[type="number"] {
 /* Selected list */
 .quick-selected-block {
   background: var(--accent-subtle);
-  border: 1px solid rgba(255, 107, 44, 0.3);
+  border: 1px solid rgba(47, 93, 63, 0.3);
   border-radius: var(--radius);
   padding: 4px 14px 12px;
   margin-bottom: 16px;
@@ -4941,7 +4952,7 @@ input[type="number"] {
 
 .info-mini-list.errors li::before {
   content: counter(err);
-  background: rgba(248, 113, 113, 0.15);
+  background: rgba(192, 73, 47, 0.15);
   color: var(--red);
   border-radius: 50%;
   width: 18px;
@@ -4959,8 +4970,8 @@ input[type="number"] {
 .info-warning {
   margin: 12px 0 4px;
   padding: 8px 12px;
-  background: rgba(248, 113, 113, 0.08);
-  border: 1px solid rgba(248, 113, 113, 0.3);
+  background: rgba(192, 73, 47, 0.08);
+  border: 1px solid rgba(192, 73, 47, 0.3);
   border-radius: var(--radius-xs);
   color: var(--red);
   font-size: 12px;

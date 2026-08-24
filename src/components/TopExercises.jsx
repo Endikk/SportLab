@@ -1,23 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { getTopExercises } from "../utils/storage";
+import { muscleColors } from "../utils/exerciseVisuals";
 
-const GROUP_COLORS = {
-  Pectoraux: "#FF6A13",
-  Dos: "#3B82F6",
-  Épaules: "#F59E0B",
-  Biceps: "#EC4899",
-  Triceps: "#EF4444",
-  Bras: "#EC4899",
-  Trapèzes: "#6366F1",
-  Lombaires: "#6366F1",
-  Quadriceps: "#10B981",
-  Ischios: "#059669",
-  Mollets: "#14B8A6",
-  Abdos: "#F97316",
-  Cardio: "#22D3EE",
-  Mobilité: "#A78BFA",
-  Autre: "#5A5A65",
-};
 
 export default function TopExercises({ period = "28d", limit = 5 }) {
   const navigate = useNavigate();
@@ -33,7 +17,7 @@ export default function TopExercises({ period = "28d", limit = 5 }) {
       </div>
       <div className="top-exos-list">
         {rows.map((row, i) => {
-          const color = GROUP_COLORS[row.muscleGroup] || GROUP_COLORS.Autre;
+          const color = muscleColors[row.muscleGroup] || muscleColors.Autre;
           return (
             <button
               key={row.exerciseId}
