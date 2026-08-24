@@ -7,6 +7,7 @@ import {
   getActiveSchedule,
 } from "../utils/storage";
 import { getSessionVisual } from "../utils/exerciseVisuals";
+import Logo from "../components/Logo";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -57,10 +58,7 @@ export default function Home() {
   return (
     <div className="page home-page">
       <header className="home-header sticky-header">
-        <div className="logo">
-          <span className="logo-sport">SPORT</span>
-          <span className="logo-lab">LAB.</span>
-        </div>
+        <Logo />
       </header>
 
 

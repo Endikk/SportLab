@@ -1,24 +1,55 @@
 {
   "id": "/",
   "scope": "/",
-  "name": "SportLab — Suivi Musculation",
+  "name": "SportLab — Upper / Lower / Full Body",
   "short_name": "SportLab",
-  "description": "Programme hypertrophie bras et jambes, séance libre, chrono, monitoring complet (1RM, PR, volume par muscle, calendrier).",
+  "description": "Programme de musculation Upper / Lower / Full Body : séances guidées, démonstrations animées de chaque exercice, chrono de repos.",
   "lang": "fr",
   "dir": "ltr",
   "start_url": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
   "background_color": "#FBF9F4",
   "theme_color": "#2F5D3F",
-  "categories": ["fitness", "health", "lifestyle"],
+  "categories": [
+    "fitness",
+    "health",
+    "lifestyle"
+  ],
   "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
     {
       "src": "/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
