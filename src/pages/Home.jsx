@@ -1,12 +1,6 @@
-import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   getWorkoutInProgress,
-  getRecentSessions,
-  exportData,
-  importData,
-  hasRecentPR,
-  findExerciseById,
   findSessionById,
   VISIBLE_PROGRAMS,
   ACTIVE_PROGRAM,
@@ -22,15 +16,6 @@ export default function Home() {
   const todaySchedule = activeSchedule.find((s) => s.day === todayCapitalized);
 
   const inProgress = getWorkoutInProgress();
-  const recentSessions = getRecentSessions();
-  const lastSession = recentSessions[0];
-  const recentPR = hasRecentPR(7);
-  const prExerciseName = recentPR ? findExerciseById(recentPR.exerciseId)?.exercise?.name : null;
-
-  const [now] = useState(() => Date.now());
-  const daysSince = lastSession
-    ? Math.floor((now - lastSession.timestamp) / 86400000)
-    : null;
 
   const todaySession = todaySchedule?.session
     ? ACTIVE_PROGRAM.sessions.find((s) => s.id === todaySchedule?.session)
@@ -39,34 +24,17 @@ export default function Home() {
     ? getSessionVisual(todaySchedule.session)
     : null;
 
-  // Settings panel
-  const [showSettings, setShowSettings] = useState(false);
-  const [msg, setMsg] = useState(null);
-  const fileRef = useRef(null);
-
-  const handleImport = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const out = await importData(file);
-      setMsg(out);
-      setTimeout(() => setMsg(null), 3000);
-    } catch (err) {
-      setMsg(err.message);
-      setTimeout(() => setMsg(null), 3000);
-    }
-    e.target.value = "";
-  };
 
   const renderSessionCard = (session) => {
     const vis = getSessionVisual(session.id);
     const isToday = todaySchedule?.session === session.id;
 
     return (
-      <div
+      <button
         key={session.id}
         className={`session-tile ${isToday ? "today" : ""}`}
         onClick={() => navigate(`/workout/${session.id}`)}
+        aria-label={`Démarrer ${session.name}`}
       >
         <div
           className="session-tile-visual"
@@ -82,7 +50,7 @@ export default function Home() {
           <span className="session-tile-name">{session.muscleGroups}</span>
           <span className="session-tile-meta">{session.day.substring(0, 3)} · {session.duration}</span>
         </div>
-      </div>
+      </button>
     );
   };
 
@@ -93,59 +61,9 @@ export default function Home() {
           <span className="logo-sport">SPORT</span>
           <span className="logo-lab">LAB.</span>
         </div>
-        <button className="settings-btn" onClick={() => setShowSettings(!showSettings)} aria-label="Paramètres">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-          </svg>
-        </button>
       </header>
 
-      {/* Settings panel */}
-      {showSettings && (
-        <div className="settings-panel">
-          <h3 className="settings-title">Mes données</h3>
-          <div className="settings-actions">
-            <button className="settings-action-btn" onClick={exportData}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
-              </svg>
-              <div>
-                <span className="settings-action-label">Sauvegarder</span>
-                <span className="settings-action-desc">Télécharger un fichier de backup</span>
-              </div>
-            </button>
-            <button className="settings-action-btn" onClick={() => fileRef.current?.click()}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-              </svg>
-              <div>
-                <span className="settings-action-label">Restaurer</span>
-                <span className="settings-action-desc">Importer depuis un fichier</span>
-              </div>
-            </button>
-            <input ref={fileRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} />
-          </div>
-          {msg && <p className="settings-msg">{msg}</p>}
-        </div>
-      )}
 
-      {/* Recent PR badge */}
-      {recentPR && prExerciseName && (
-        <button
-          className="pr-banner"
-          onClick={() => navigate(`/history/${recentPR.exerciseId}`)}
-        >
-          <span className="pr-trophy" aria-hidden="true">🏆</span>
-          <div className="pr-info">
-            <span className="pr-label">Nouveau record</span>
-            <span className="pr-text">
-              {prExerciseName} — {recentPR.weight} kg
-            </span>
-          </div>
-          <span className="pr-arrow" aria-hidden="true">&rarr;</span>
-        </button>
-      )}
 
       {/* Resume in-progress workout */}
       {inProgress && (
@@ -182,12 +100,7 @@ export default function Home() {
           <div className="today-hero-body">
             <div className="today-hero-text">
               <p className="today-hero-muscles">{todaySession.muscleGroups}</p>
-              <p className="today-hero-duration">
-                {todaySession.duration}
-                {daysSince !== null && daysSince >= 1 && (
-                  <span className="streak-dot"> · Dernière séance {daysSince === 1 ? "hier" : `il y a ${daysSince}j`}</span>
-                )}
-              </p>
+              <p className="today-hero-duration">{todaySession.duration}</p>
             </div>
             <div className="today-hero-actions">
               <button

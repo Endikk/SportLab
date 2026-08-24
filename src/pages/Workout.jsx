@@ -1,51 +1,28 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  getLastLogForExercise,
-  saveSessionLog,
   parseMaxReps,
   parseRestSeconds,
   findSessionById,
-  saveBodyweight,
-  getLatestBodyweight,
-  suggestNextWeight,
-  compareWithPreviousSession,
   getExerciseNote,
   saveExerciseNote,
   isBodyweightExercise,
+  saveWorkoutProgress,
+  loadWorkoutProgress,
+  clearWorkoutProgress,
 } from "../utils/storage";
 import { getGradient, getIconPath } from "../utils/exerciseVisuals";
 import ExerciseImage from "../components/ExerciseImage";
+import ExerciseImageViewer from "../components/ExerciseImageViewer";
 import RestTimer from "../components/RestTimer";
 import ExerciseCatalogPicker from "../components/ExerciseCatalogPicker";
 
 const RPE_VALUES = [6, 7, 8, 9, 10];
 
-function isBodyweightStale(latest) {
-  if (!latest) return true;
-  const last = new Date(latest.date + "T12:00:00").getTime();
-  return Date.now() - last > 7 * 86400000;
-}
-
-const AUTOSAVE_KEY = "sportlab_workout_progress";
-
-function loadProgress(sessionId) {
-  try {
-    const raw = localStorage.getItem(AUTOSAVE_KEY);
-    if (!raw) return null;
-    const data = JSON.parse(raw);
-    if (data.sessionId !== sessionId) return null;
-    return data;
-  } catch {
-    return null;
-  }
-}
-
-function saveProgressData(sessionId, exerciseLogs, exerciseIdx, exerciseOrder, startedAt) {
-  localStorage.setItem(
-    AUTOSAVE_KEY,
-    JSON.stringify({ sessionId, exerciseLogs, exerciseIdx, exerciseOrder, startedAt })
-  );
+// Le pavé décimal d'un clavier FR produit une virgule : avec type="number" le champ
+// se vidait silencieusement. On accepte les deux séparateurs et on normalise.
+function normalizeWeight(raw) {
+  return String(raw).replace(",", ".").replace(/[^0-9.]/g, "");
 }
 
 function fmtDuration(ms) {
@@ -55,10 +32,6 @@ function fmtDuration(ms) {
   const s = total % 60;
   if (h > 0) return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-function clearProgress() {
-  localStorage.removeItem(AUTOSAVE_KEY);
 }
 
 function findSection(session, exerciseId) {
@@ -71,9 +44,12 @@ function findSection(session, exerciseId) {
 export default function Workout() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
-  const session = findSessionById(sessionId);
+  const session = useMemo(() => findSessionById(sessionId), [sessionId]);
 
-  const baseExercises = session ? session.sections.flatMap((s) => s.exercises) : [];
+  const baseExercises = useMemo(
+    () => (session ? session.sections.flatMap((s) => s.exercises) : []),
+    [session]
+  );
 
   // Extras piochés dans le catalogue pendant la séance (ajoutent des exos en fin)
   const [extraExercises, setExtraExercises] = useState([]);
@@ -95,19 +71,12 @@ export default function Workout() {
   const [restTimerKey, setRestTimerKey] = useState(0); // change pour redémarrer le timer
   const [restTimerSec, setRestTimerSec] = useState(0); // 0 = inactif
   const [openRpeFor, setOpenRpeFor] = useState(null); // "exId-i" si popup ouvert
-  const [mood, setMood] = useState(null);
-  const [note, setNote] = useState("");
-  const [bwInput, setBwInput] = useState("");
-  const [askBw] = useState(() => isBodyweightStale(getLatestBodyweight()));
-
-  // Phase B — chrono + suggestions
+  // Chrono de séance
   const [startedAt, setStartedAt] = useState(() => {
-    const restored = loadProgress(sessionId);
+    const restored = loadWorkoutProgress(sessionId);
     return restored?.startedAt || Date.now();
   });
   const [nowTick, setNowTick] = useState(() => Date.now());
-  const [suggestions, setSuggestions] = useState({}); // exId → suggestion
-  const [comparison, setComparison] = useState(null);
 
   // Phase C — note par exercice
   const [editingNote, setEditingNote] = useState(false);
@@ -131,14 +100,13 @@ export default function Workout() {
       return;
     }
 
-    // Init des sets pour ce nouvel exo (avec last log si dispo)
-    const last = getLastLogForExercise(exercise.id);
+    // Init des sets pour ce nouvel exo
     const maxReps = parseMaxReps(exercise.reps);
     const sets = [];
     const numSets = Number(exercise.sets) || 3;
     for (let i = 0; i < numSets; i++) {
       sets.push({
-        weight: last?.sets?.[i]?.weight ?? "",
+        weight: "",
         reps: maxReps !== null ? String(maxReps) : exercise.reps || "",
         done: false,
       });
@@ -165,37 +133,51 @@ export default function Workout() {
   const touchStartY = useRef(null);
   const isSwiping = useRef(false);
   const isAnimating = useRef(false);
+  // Les setTimeout d'animation doivent être annulés au démontage, sinon leur callback
+  // s'exécute sur un composant démonté et isAnimating reste bloqué à true.
+  const timeouts = useRef([]);
+  const later = useCallback((fn, ms) => {
+    const id = setTimeout(fn, ms);
+    timeouts.current.push(id);
+    return id;
+  }, []);
+  useEffect(() => {
+    const pending = timeouts.current;
+    return () => {
+      pending.forEach(clearTimeout);
+      pending.length = 0;
+    };
+  }, []);
 
   // ─── Initialize ───
   useEffect(() => {
     if (!session) return;
 
-    const restored = loadProgress(sessionId);
+    const restored = loadWorkoutProgress(sessionId);
     if (restored?.exerciseLogs) {
+      // Les exos ajoutés en cours de séance doivent être restaurés AVANT l'ordre :
+      // sans eux, les index sauvegardés pointent hors du tableau et le rendu plante.
+      const extras = Array.isArray(restored.extraExercises) ? restored.extraExercises : [];
+      const restoredCount = baseExercises.length + extras.length;
+      setExtraExercises(extras);
       setExerciseLogs(restored.exerciseLogs);
-      setExerciseIdx(restored.exerciseIdx ?? 0);
-      if (restored.exerciseOrder) setExerciseOrder(restored.exerciseOrder);
+      // Filet de sécurité si le programme a changé depuis la sauvegarde.
+      const order = Array.isArray(restored.exerciseOrder)
+        ? restored.exerciseOrder.filter((i) => Number.isInteger(i) && i >= 0 && i < restoredCount)
+        : baseExercises.map((_, i) => i);
+      setExerciseOrder(order.length ? order : baseExercises.map((_, i) => i));
+      setExerciseIdx(Math.min(restored.exerciseIdx ?? 0, Math.max(0, order.length - 1)));
       if (restored.startedAt) setStartedAt(restored.startedAt);
       return;
     }
 
     const initial = {};
-    const sugg = {};
     for (const ex of allExercises) {
-      const last = getLastLogForExercise(ex.id);
       const maxReps = parseMaxReps(ex.reps);
-      const suggestion = suggestNextWeight(ex.id, maxReps);
-      if (suggestion) sugg[ex.id] = suggestion;
-
-      const initialWeight =
-        suggestion?.suggestedWeight != null
-          ? String(suggestion.suggestedWeight)
-          : (last?.sets?.[0]?.weight ?? "");
-
       const sets = [];
       for (let i = 0; i < ex.sets; i++) {
         sets.push({
-          weight: i === 0 ? initialWeight : (last?.sets?.[i]?.weight ?? initialWeight),
+          weight: "",
           reps: maxReps !== null ? String(maxReps) : ex.reps || "",
           done: false,
         });
@@ -203,19 +185,25 @@ export default function Workout() {
       initial[ex.id] = { sets };
     }
     setExerciseLogs(initial);
-    setSuggestions(sugg);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
   // ─── Ordered exercises ───
-  const orderedExercises = exerciseOrder.map((i) => allExercises[i]);
+  // filter(Boolean) : dernier rempart contre un index orphelin.
+  const orderedExercises = exerciseOrder.map((i) => allExercises[i]).filter(Boolean);
 
   // ─── Autosave ───
   useEffect(() => {
     if (Object.keys(exerciseLogs).length > 0 && !saved) {
-      saveProgressData(sessionId, exerciseLogs, exerciseIdx, exerciseOrder, startedAt);
+      saveWorkoutProgress(sessionId, {
+        exerciseLogs,
+        exerciseIdx,
+        exerciseOrder,
+        startedAt,
+        extraExercises,
+      });
     }
-  }, [exerciseLogs, sessionId, saved, exerciseIdx, exerciseOrder, startedAt]);
+  }, [exerciseLogs, sessionId, saved, exerciseIdx, exerciseOrder, startedAt, extraExercises]);
 
   // ─── Set updaters (hooks must be before any early return) ───
   const updateField = useCallback((exerciseId, si, field, value) => {
@@ -286,7 +274,7 @@ export default function Workout() {
     if (isAnimating.current) return;
     isAnimating.current = true;
     setExitDir("right");
-    setTimeout(() => {
+    later(() => {
       setExitDir(null);
       setSwipeOffset(0);
       isAnimating.current = false;
@@ -297,28 +285,20 @@ export default function Workout() {
       }
       setCardKey((k) => k + 1);
     }, 280);
-  }, [isLast]);
+  }, [isLast, later]);
 
   const goPrev = useCallback(() => {
     if (isAnimating.current || exerciseIdx === 0) return;
     isAnimating.current = true;
     setExitDir("left");
-    setTimeout(() => {
+    later(() => {
       setExitDir(null);
       setSwipeOffset(0);
       isAnimating.current = false;
       setExerciseIdx((i) => i - 1);
       setCardKey((k) => k + 1);
     }, 280);
-  }, [exerciseIdx]);
-
-  // ─── Calcul du comparateur quand on arrive sur l'écran allDone ───
-  useEffect(() => {
-    if (allDone && !comparison) {
-      setComparison(compareWithPreviousSession(sessionId, exerciseLogs));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allDone]);
+  }, [exerciseIdx, later]);
 
   // ─── Not found ───
   if (!session) {
@@ -382,22 +362,9 @@ export default function Workout() {
     touchStartX.current = null;
   };
 
-  // ─── Save ───
-  const handleSave = () => {
-    const today = new Date().toLocaleDateString("fr-CA");
-    const meta = {};
-    if (mood) meta.mood = mood;
-    if (note.trim()) meta.note = note.trim();
-    const bw = parseFloat(bwInput.replace(",", "."));
-    if (isFinite(bw) && bw > 0 && bw < 400) {
-      meta.bodyweight = bw;
-      saveBodyweight(today, bw);
-    }
-    const durationMin = Math.max(1, Math.round((Date.now() - startedAt) / 60000));
-    if (durationMin > 0 && durationMin < 600) meta.durationMin = durationMin;
-
-    saveSessionLog(today, sessionId, exerciseLogs, meta);
-    clearProgress();
+  // ─── Fin de séance ───
+  const handleFinish = () => {
+    clearWorkoutProgress(sessionId);
     setSaved(true);
   };
 
@@ -410,7 +377,7 @@ export default function Workout() {
   };
 
   const handleCancelDiscard = () => {
-    clearProgress();
+    clearWorkoutProgress(sessionId);
     navigate("/");
   };
 
@@ -420,7 +387,7 @@ export default function Workout() {
     const skippedName = orderedExercises[exerciseIdx]?.name;
     isAnimating.current = true;
     setExitDir("right");
-    setTimeout(() => {
+    later(() => {
       setExerciseOrder((prev) => {
         const updated = [...prev];
         const temp = updated[exerciseIdx];
@@ -433,7 +400,7 @@ export default function Workout() {
       isAnimating.current = false;
       setCardKey((k) => k + 1);
       setSkipToast(skippedName);
-      setTimeout(() => setSkipToast(null), 2000);
+      later(() => setSkipToast(null), 2000);
     }, 280);
   };
 
@@ -496,34 +463,6 @@ export default function Workout() {
             <span className="finish-duration"> · {fmtDuration(nowTick - startedAt)}</span>
           </p>
 
-          {/* Comparateur vs séance précédente */}
-          {comparison && comparison.rows.length > 0 && (
-            <div className="finish-block compare-block">
-              <label className="finish-label">vs séance précédente</label>
-              <div className="compare-list">
-                {comparison.rows.slice(0, 6).map((row) => {
-                  const dir = row.isFirstTime
-                    ? "new"
-                    : row.deltaMax > 0
-                    ? "up"
-                    : row.deltaMax < 0
-                    ? "down"
-                    : "same";
-                  return (
-                    <div key={row.exerciseId} className={`compare-row compare-${dir}`}>
-                      <span className="compare-name">{row.name}</span>
-                      <span className="compare-delta">
-                        {dir === "new" && "Nouveau"}
-                        {dir === "up" && `+${row.deltaMax} kg`}
-                        {dir === "down" && `${row.deltaMax} kg`}
-                        {dir === "same" && "Stable"}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
 
           {/* Ajouter un exo en plus (cardio, autre exo, etc.) */}
           <div className="finish-block">
@@ -541,56 +480,9 @@ export default function Workout() {
             )}
           </div>
 
-          {/* Énergie / mood */}
-          <div className="finish-block">
-            <label className="finish-label">Comment tu te sens ?</label>
-            <div className="mood-row">
-              {[1, 2, 3, 4, 5].map((v) => (
-                <button
-                  key={v}
-                  className={`mood-btn ${mood === v ? "active" : ""}`}
-                  onClick={() => setMood(mood === v ? null : v)}
-                  aria-label={`Énergie ${v}/5`}
-                >
-                  {["😴", "😐", "🙂", "💪", "🔥"][v - 1]}
-                </button>
-              ))}
-            </div>
-          </div>
 
-          {/* Bodyweight (seulement si pas mesuré récemment) */}
-          {askBw && (
-            <div className="finish-block">
-              <label className="finish-label">Poids du jour (optionnel)</label>
-              <div className="finish-bw-wrap">
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  step="0.1"
-                  className="finish-input"
-                  value={bwInput}
-                  onChange={(e) => setBwInput(e.target.value)}
-                  placeholder="75.5"
-                />
-                <span className="finish-bw-unit">kg</span>
-              </div>
-            </div>
-          )}
 
-          {/* Note */}
-          <div className="finish-block">
-            <label className="finish-label">Note (optionnel)</label>
-            <input
-              type="text"
-              className="finish-input"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Ex : Bon ressenti, à reprendre…"
-              maxLength={200}
-            />
-          </div>
-
-          <button className="finish-save-btn" onClick={handleSave}>Enregistrer</button>
+          <button className="finish-save-btn" onClick={handleFinish}>Terminer la séance</button>
         </div>
 
         {/* Catalogue d'exos pour ajouter en plus */}
@@ -689,8 +581,17 @@ export default function Workout() {
           {/* Gradient header — tap to fullscreen */}
           <div
             className="card-visual"
+            role={currentExercise.image ? "button" : undefined}
+            tabIndex={currentExercise.image ? 0 : undefined}
+            aria-label={currentExercise.image ? `Voir la démonstration de ${currentExercise.name}` : undefined}
             style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}
             onClick={() => currentExercise.image && setShowImage(true)}
+            onKeyDown={(e) => {
+              if (currentExercise.image && (e.key === "Enter" || e.key === " ")) {
+                e.preventDefault();
+                setShowImage(true);
+              }
+            }}
           >
             <ExerciseImage name={currentExercise.image} alt={currentExercise.name} className="card-visual-img" />
             <svg viewBox="0 0 24 24" className="card-visual-icon" fill="white" opacity="0.2">
@@ -716,18 +617,6 @@ export default function Workout() {
             <span className="card-meta-rest">Repos {currentExercise.rest}</span>
           </div>
 
-          {/* Suggestion de charge */}
-          {suggestions[currentExercise.id]?.progress && (
-            <div className="suggestion-hint">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                <path d="M3 17l6-6 4 4 8-8" /><path d="M14 7h7v7" />
-              </svg>
-              <span>
-                +{suggestions[currentExercise.id].increment} kg suggéré
-                {" "}<small>(dernière fois : {suggestions[currentExercise.id].baseWeight} kg)</small>
-              </span>
-            </div>
-          )}
 
           {/* All sets */}
           <div className="card-sets">
@@ -801,28 +690,31 @@ export default function Workout() {
                   <span className="card-set-num">{i + 1}</span>
 
                   <input
-                    type="number"
+                    type="text"
                     inputMode="decimal"
                     className="card-set-input"
+                    aria-label={`Poids série ${i + 1}`}
                     placeholder={isBodyweightExercise(currentExercise.name) ? "PC ou kg" : "kg"}
                     value={set.weight}
-                    onChange={(e) => updateField(currentExercise.id, i, "weight", e.target.value)}
+                    onChange={(e) => updateField(currentExercise.id, i, "weight", normalizeWeight(e.target.value))}
                   />
 
                   <div className="card-reps-stepper">
-                    <button className="reps-btn" onClick={() => adjustReps(currentExercise.id, i, -1)}>−</button>
+                    <button className="reps-btn" aria-label={`Retirer une répétition série ${i + 1}`} onClick={() => adjustReps(currentExercise.id, i, -1)}>−</button>
                     <input
                       type="number"
                       inputMode="numeric"
                       className="card-reps-input"
+                      aria-label={`Répétitions série ${i + 1}`}
                       value={set.reps}
                       onChange={(e) => updateField(currentExercise.id, i, "reps", e.target.value)}
                     />
-                    <button className="reps-btn" onClick={() => adjustReps(currentExercise.id, i, 1)}>+</button>
+                    <button className="reps-btn" aria-label={`Ajouter une répétition série ${i + 1}`} onClick={() => adjustReps(currentExercise.id, i, 1)}>+</button>
                   </div>
 
                   <button
                     className="card-check"
+                    aria-label={`Valider la série ${i + 1}`}
                     onClick={() => toggleDone(currentExercise.id, i, currentExercise.rest)}
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden="true">
@@ -836,7 +728,9 @@ export default function Workout() {
 
           {/* Note perso (Phase C) */}
           {(() => {
-            const personalNote = (notesVersion, getExerciseNote(currentExercise.id));
+            // notesVersion force la relecture après édition (voir setNotesVersion)
+            void notesVersion;
+            const personalNote = getExerciseNote(currentExercise.id);
             const startEditing = () => {
               setNoteDraft(personalNote || "");
               setEditingNote(true);
@@ -908,7 +802,8 @@ export default function Workout() {
 
       {/* Navigation */}
       <div className="exercise-nav-bar">
-        <button className="nav-btn-prev" onClick={goPrev} disabled={exerciseIdx === 0}>
+        <button className="nav-btn-prev"
+            aria-label="Exercice précédent" onClick={goPrev} disabled={exerciseIdx === 0}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" /></svg>
         </button>
         {!isLast && (
@@ -923,7 +818,8 @@ export default function Workout() {
             Terminer
           </button>
         ) : (
-          <button className="nav-btn-next" onClick={goNext}>
+          <button className="nav-btn-next"
+            aria-label="Exercice suivant" onClick={goNext}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
           </button>
         )}
@@ -947,11 +843,12 @@ export default function Workout() {
       )}
 
       {/* Fullscreen image viewer */}
-      {showImage && currentExercise.image && (
-        <div className="image-viewer" onClick={() => setShowImage(false)}>
-          <ExerciseImage name={currentExercise.image} alt={currentExercise.name} className="image-viewer-img" />
-          <p className="image-viewer-name">{currentExercise.name}</p>
-        </div>
+      {showImage && (
+        <ExerciseImageViewer
+          image={currentExercise.image}
+          name={currentExercise.name}
+          onClose={() => setShowImage(false)}
+        />
       )}
 
       {/* Catalogue d'exos (ajout en plus pendant la séance) */}

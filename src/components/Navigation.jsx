@@ -14,27 +14,14 @@ const TABS = [
     ),
   },
   {
-    id: "stats",
-    path: "/stats",
-    label: "Stats",
-    matches: (p) => p === "/stats" || p === "/logs" || p.startsWith("/history"),
+    id: "exos",
+    path: "/exos",
+    label: "Exos",
+    matches: (p) => p === "/exos" || p === "/quick",
     icon: (
       <>
-        <line x1="18" y1="20" x2="18" y2="10" />
-        <line x1="12" y1="20" x2="12" y2="4" />
-        <line x1="6" y1="20" x2="6" y2="14" />
-      </>
-    ),
-  },
-  {
-    id: "records",
-    path: "/records",
-    label: "Records",
-    matches: (p) => p === "/records",
-    icon: (
-      <>
-        <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4z" />
-        <path d="M7 4H4v3a3 3 0 003 3M17 4h3v3a3 3 0 01-3 3" />
+        <path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6" />
+        <path d="M6.5 12h11" />
       </>
     ),
   },

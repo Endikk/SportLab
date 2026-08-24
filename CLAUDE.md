@@ -1,7 +1,8 @@
 # SportLab — Context
 
 ## What
-PWA offline de suivi musculation (Upper/Lower/Full Body).
+PWA offline de guidage de séance (Upper/Lower/Full Body).
+Aucun historique n'est enregistré : l'app guide la séance, elle ne la mémorise pas.
 React 19 + Vite 8 + React Router 7 (HashRouter) + localStorage.
 Pas de backend, pas de state library, 100% client-side.
 
@@ -17,9 +18,9 @@ npm run preview  # Preview du build
 ```
 src/
 ├── data/program-ulf.js      # Source unique du programme (Upper/Lower/Full Body, 3 séances, 26 exercices)
-├── pages/                   # Pages = routes (Home, Session, Workout, History, Logs)
+├── pages/                   # Pages = routes (Home, Session, Workout, Exercises, Quick, ProgramInfo)
 ├── components/              # Composants réutilisables (Navigation, ExerciseCard, BarChart, ExerciseImage)
-├── utils/storage.js         # API localStorage (logs, autosave, export/import)
+├── utils/storage.js         # API localStorage (séance en cours, séances custom, notes)
 ├── utils/exerciseVisuals.js # Gradients, emojis, couleurs par section/séance
 ├── index.css                # Styles globaux — thème noir/orange via CSS variables
 ├── App.jsx                  # Définition des routes
@@ -36,7 +37,8 @@ src/
 
 ## Règles critiques
 - Ne JAMAIS modifier `data/program-ulf.js` sans confirmer — c'est la source unique du programme
-- Toujours envelopper `JSON.parse()` dans un try-catch
+- Toujours envelopper `JSON.parse()` dans un try-catch, et les écritures via `safeSetItem`
+- L'app n'enregistre AUCUN historique de séance — ne pas réintroduire de logs sans demander
 - Utiliser les CSS variables existantes (`--accent`, `--bg-card`, `--text-1`, etc.)
 - Mobile-first : max-width 480px, tester le rendu mobile
 - Pas de dépendances externes inutiles — l'app doit rester légère et offline

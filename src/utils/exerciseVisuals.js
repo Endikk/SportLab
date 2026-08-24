@@ -86,16 +86,16 @@ export function getIconPath(exerciseName) {
 // ─── Session visuals ───
 
 const sessionVisuals = {
-  "ulf-upper": { emoji: "UPPER", gradient: ["#4E9E4A", "#7FC96A"], icon: iconPaths.barbell },
+  "ulf-upper": { emoji: "UPPER", gradient: ["#3A7A38", "#7FC96A"], icon: iconPaths.barbell },
   "ulf-lower": { emoji: "LOWER", gradient: ["#1F4029", "#3F7A52"], icon: iconPaths.machine },
-  "ulf-full":  { emoji: "FULL",  gradient: ["#A9713A", "#D19A55"], icon: iconPaths.dumbbell },
+  "ulf-full":  { emoji: "FULL",  gradient: ["#8A5B2E", "#D19A55"], icon: iconPaths.dumbbell },
 };
 
 const TYPE_FALLBACK = {
   cardio:   { gradient: ["#2C4A7C", "#5B84BF"], icon: iconPaths.cardio,    emoji: "CARDIO" },
   mobility: { gradient: ["#B4527A", "#E4739B"], icon: iconPaths.mobility,  emoji: "MOBI" },
-  custom:   { gradient: ["#2F5D3F", "#4E9E4A"], icon: iconPaths.dumbbell,  emoji: "PERSO" },
-  strength: { gradient: ["#2F5D3F", "#4E9E4A"], icon: iconPaths.dumbbell,  emoji: "FORCE" },
+  custom:   { gradient: ["#2F5D3F", "#3A7A38"], icon: iconPaths.dumbbell,  emoji: "PERSO" },
+  strength: { gradient: ["#2F5D3F", "#3A7A38"], icon: iconPaths.dumbbell,  emoji: "FORCE" },
 };
 
 // session peut être passée pour récupérer emoji/gradient personnalisés (séance custom)
@@ -118,18 +118,18 @@ export function getSessionVisual(sessionId, session = null) {
 export const muscleColors = {
   Pectoraux:  "#C05621",
   Dos:        "#2C4A7C",
-  "Épaules":  "#B7791F",
+  "Épaules":  "#8A5A12",
   Biceps:     "#B4527A",
   Triceps:    "#C0492F",
   Bras:       "#9D4E6C",
   "Trapèzes": "#4C5B9E",
   Lombaires:  "#6B5B95",
   Quadriceps: "#2F5D3F",
-  Ischios:    "#4E9E4A",
-  Fessiers:   "#7FA650",
-  Mollets:    "#2E7D6E",
-  Abdos:      "#A9713A",
-  Cardio:     "#2A7FA3",
+  Ischios:    "#3A7A38",
+  Fessiers:   "#5A7534",
+  Mollets:    "#26695C",
+  Abdos:      "#8A5B2E",
+  Cardio:     "#21657F",
   "Mobilité": "#7C5BA6",
-  Autre:      "#8B978F",
+  Autre:      "#6B756F",
 };
