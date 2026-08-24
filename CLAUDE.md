@@ -1,7 +1,7 @@
 # SportLab — Context
 
 ## What
-PWA offline de suivi musculation (Push/Pull/Legs).
+PWA offline de suivi musculation (Upper/Lower/Full Body).
 React 19 + Vite 8 + React Router 7 (HashRouter) + localStorage.
 Pas de backend, pas de state library, 100% client-side.
 
@@ -16,7 +16,7 @@ npm run preview  # Preview du build
 ## Architecture
 ```
 src/
-├── data/program.js          # Source unique du programme (4 séances, 50+ exercices)
+├── data/program-ulf.js      # Source unique du programme (Upper/Lower/Full Body, 3 séances, 26 exercices)
 ├── pages/                   # Pages = routes (Home, Session, Workout, History, Logs)
 ├── components/              # Composants réutilisables (Navigation, ExerciseCard, BarChart, ExerciseImage)
 ├── utils/storage.js         # API localStorage (logs, autosave, export/import)
@@ -35,7 +35,7 @@ src/
 - PWA : Service Worker dans `public/sw.js`, manifest dans `public/manifest.json`
 
 ## Règles critiques
-- Ne JAMAIS modifier `data/program.js` sans confirmer — c'est la source unique du programme
+- Ne JAMAIS modifier `data/program-ulf.js` sans confirmer — c'est la source unique du programme
 - Toujours envelopper `JSON.parse()` dans un try-catch
 - Utiliser les CSS variables existantes (`--accent`, `--bg-card`, `--text-1`, etc.)
 - Mobile-first : max-width 480px, tester le rendu mobile

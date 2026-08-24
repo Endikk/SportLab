@@ -1,12 +1,7 @@
-import { program } from "../data/program";
-import { programHypertrophie } from "../data/program-hypertrophie";
 import { programUlf } from "../data/program-ulf";
 
 export const PROGRAMS = [
   { id: "ulf", name: programUlf.name, sessions: programUlf.sessions, schedule: programUlf.schedule },
-  // Programmes archivés : conservés pour la rétro-compatibilité des logs anciens (cachés de l'UI).
-  { id: "ppl", name: "Push / Pull / Legs", sessions: program.sessions, schedule: program.schedule, hidden: true },
-  { id: "hypertrophie", name: programHypertrophie.name, sessions: programHypertrophie.sessions, schedule: programHypertrophie.schedule, hidden: true },
 ];
 
 export const VISIBLE_PROGRAMS = PROGRAMS.filter((p) => !p.hidden);
@@ -407,8 +402,8 @@ export function getWeeklyStats() {
     }
   }
 
-  // Séances prévues sur la semaine selon le programme
-  const planned = program.schedule.filter((d) => d.session).length;
+  // Séances prévues sur la semaine selon le programme actif
+  const planned = ACTIVE_PROGRAM.schedule.filter((d) => d.session).length;
   return {
     sessionsDone: logs.length,
     sessionsPlanned: planned,
@@ -651,7 +646,9 @@ export function getStatsForPeriod(period) {
     }
   }
   const days = PERIOD_DAYS[period];
-  const planned = days ? Math.max(1, Math.round((days / 7) * program.schedule.filter((d) => d.session).length)) : null;
+  const planned = days
+    ? Math.max(1, Math.round((days / 7) * ACTIVE_PROGRAM.schedule.filter((d) => d.session).length))
+    : null;
   return {
     sessionsDone: logs.length,
     sessionsPlanned: planned,

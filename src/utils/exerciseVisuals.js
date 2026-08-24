@@ -86,25 +86,9 @@ export function getIconPath(exerciseName) {
 // ─── Session visuals ───
 
 const sessionVisuals = {
-  push:  { emoji: "PUSH",  gradient: ["#E8450E", "#FF8C42"], icon: iconPaths.barbell },
-  pull:  { emoji: "PULL",  gradient: ["#2563EB", "#60A5FA"], icon: iconPaths.barbell },
-  legs:  { emoji: "LEGS",  gradient: ["#059669", "#34D399"], icon: iconPaths.machine },
-  bonus: { emoji: "BONUS", gradient: ["#D97706", "#FBBF24"], icon: iconPaths.dumbbell },
-
-  // Programme Upper / Lower / Full Body (actif)
   "ulf-upper": { emoji: "UPPER", gradient: ["#E8450E", "#FF8C42"], icon: iconPaths.barbell },
   "ulf-lower": { emoji: "LOWER", gradient: ["#059669", "#34D399"], icon: iconPaths.machine },
   "ulf-full":  { emoji: "FULL",  gradient: ["#2563EB", "#60A5FA"], icon: iconPaths.dumbbell },
-
-  // Programmes archivés — conservés pour l'affichage des anciens logs.
-  "hyper-haut-a":  { emoji: "HAUT A", gradient: ["#E8450E", "#FF8C42"], icon: iconPaths.barbell },
-  "hyper-full-a":  { emoji: "FULL A", gradient: ["#2563EB", "#60A5FA"], icon: iconPaths.dumbbell },
-  "hyper-bas-a":   { emoji: "BAS A",  gradient: ["#059669", "#34D399"], icon: iconPaths.machine },
-  "hyper-bras-a":  { emoji: "BRAS A", gradient: ["#BE185D", "#EC4899"], icon: iconPaths.dumbbell },
-  "hyper-haut-b":  { emoji: "HAUT B", gradient: ["#D4500E", "#FF6A13"], icon: iconPaths.barbell },
-  "hyper-full-b":  { emoji: "FULL B", gradient: ["#1D4ED8", "#3B82F6"], icon: iconPaths.dumbbell },
-  "hyper-bas-b":   { emoji: "BAS B",  gradient: ["#047857", "#10B981"], icon: iconPaths.machine },
-  "hyper-bras-b":  { emoji: "BRAS B", gradient: ["#9D174D", "#DB2777"], icon: iconPaths.dumbbell },
 };
 
 const TYPE_FALLBACK = {
@@ -125,5 +109,5 @@ export function getSessionVisual(sessionId, session = null) {
     const emoji = (session.emoji || fallback.emoji).slice(0, 6);
     return { emoji, gradient, icon: fallback.icon };
   }
-  return sessionVisuals.push;
+  return TYPE_FALLBACK.strength;
 }

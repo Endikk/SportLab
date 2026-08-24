@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { programHypertrophieInfo } from "../data/program-hypertrophie";
 import { programUlfInfo } from "../data/program-ulf";
 
 const PROGRAM_INFOS = {
   ulf: programUlfInfo,
-  hypertrophie: programHypertrophieInfo,
 };
 
 function Section({ title, icon, defaultOpen = false, children }) {
